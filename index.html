@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Nhập</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="user.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>ĐĂNG NHẬP HỆ THỐNG</h2>
+        <input type="text" id="username" placeholder="Tên đăng nhập">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <button onclick="login()">Đăng nhập</button>
+    </div>
+
+    <script>
+        function login() {
+            const userVal = document.getElementById('username').value;
+            const passVal = document.getElementById('password').value;
+            const account = checkLogin(userVal, passVal);
+
+            if (account) {
+                localStorage.setItem('role', account.role);
+                localStorage.setItem('fullname', account.fullname);
+                if (account.role === 'admin') window.location.href = 'admin.html';
+                else window.location.href = 'dashboard.html';
+            } else {
+                alert('Sai tài khoản hoặc mật khẩu!');
+            }
+        }
+    </script>
+</body>
+</html>

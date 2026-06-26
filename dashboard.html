@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Học Sinh - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <button class="btn-secondary" onclick="logout()">Đăng xuất</button>
+        <div class="clear"></div>
+        <h2>HỌC VIÊN LUYỆN THI</h2>
+        <p>Xin chào học sinh: <b id="studentName">...</b></p>
+        <hr>
+        <h3>Đề thi có sẵn trên hệ thống:</h3>
+        <div class="list-box">
+            <h4>Đề thi Tổng hợp Trắc nghiệm & Tự luận</h4>
+            <p>Thời gian: <span id="txtDuration">...</span> phút | Trạng thái: <b id="txtStatus">...</b></p>
+            <button class="btn-success" id="btnVaoThi" onclick="window.location.href='exam.html'">VÀO THI NGAY</button>
+        </div>
+    </div>
+
+    <script>
+        // DÁN ĐOẠN LINK MOCKAPI CỦA BẠN VÀO ĐÂY
+        const API_URL = "https://6a3e27c20443193a1a0b847a.mockapi.io/questions"; 
+
+        if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
+        document.getElementById('studentName').innerText = localStorage.getItem('fullname');
+
+        async function checkExam() {
+            let res = await fetch(`${API_URL}/questions`);
+            let list = await res.json();
+            let exam = list.find(item => item.type === 'config') || {duration: "15", status: "mở"};
+            
+            document.getElementById('txtDuration').innerText = exam.duration;
+            document.getElementById('txtStatus').innerText = exam.status.toUpperCase();
+            if(exam.status === 'đóng') {
+                document.getElementById('btnVaoThi').disabled = true;
+                document.getElementById('btnVaoThi').innerText = "ĐỀ THI ĐANG KHÓA";
+                document.getElementById('btnVaoThi').style.backgroundColor = "gray";
+            }
+        }
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+        checkExam();
+    </script>
+</body>
+</html>

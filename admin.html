@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Quản Trị</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <button class="btn-secondary" onclick="logout()">Đăng xuất</button>
+        <div class="clear"></div>
+        <h2>QUẢN TRỊ VIÊN</h2>
+        <p>Xin chào: <b id="adminName">...</b></p>
+
+        <h3>1. Cấu hình Đề thi</h3>
+        <label>Thời gian làm bài (phút):</label>
+        <input type="text" id="examDuration" placeholder="Ví dụ: 15">
+        <label>Trạng thái đề thi:</label>
+        <select id="examStatus">
+            <option value="mở">Mở cho học sinh làm bài</option>
+            <option value="đóng">Đóng / Khóa đề</option>
+        </select>
+        <button class="btn-success" onclick="updateExamConfig()">Cập nhật cấu hình đề</button>
+
+        <h3>2. Tạo Câu Hỏi Mới</h3>
+        <label>Loại câu hỏi:</label>
+        <select id="quizType" onchange="toggleAnswersForm()">
+            <option value="tuluan">Tự Luận</option>
+            <option value="tracnghiem">Trắc Nghiệm (4 đáp án)</option>
+        </select>
+        <textarea id="quizContent" placeholder="Nhập nội dung câu hỏi..."></textarea>
+        
+        <div id="tracNghiemForm" style="display: none;">
+            <input type="text" id="ansA" placeholder="Đáp án A">
+            <input type="text" id="ansB" placeholder="Đáp án B">
+            <input type="text" id="ansC" placeholder="Đáp án C">
+            <input type="text" id="ansD" placeholder="Đáp án D">
+            <label>Đáp án đúng:</label>
+            <select id="correctAnswer">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+        </div>
+        <button onclick="saveQuestion()">Lưu Câu Hỏi Lên Server</button>
+
+        <h3>3. Ngân Hàng Câu Hỏi Hiện Tại</h3>
+        <div id="listQuestions">Đang tải câu hỏi...</div>
+
+        <h3>4. Bài Làm Của Học Sinh Nộp Về</h3>
+        <div id="adminSubmissionArea">Đang tải bài nộp...</div>
+    </div>
+
+    <script>
+        // DÁN ĐOẠN LINK MOCKAPI CỦA BẠN VÀO ĐÂY
+        const API_URL = "URL_MOCKAPI_CỦA_BẠN"; 
+
+        if (localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
+        document.getElementById('adminName').innerText = localStorage.getItem('fullname');
+
+        function toggleAnswersForm() {
+            const type = document.getElementById('quizType').value;
+            document.getElementById('tracNghiemForm').style.display = type === 'tracnghiem' ? 'block' : 'none';
+        }
+
+        async function loadExamConfig() {
+            try {
+                let res = await fetch(`${API_URL}/questions`);
+                let list = await res.json();
+                let config = list.find(item => item.type === 'config');
+                if (config) {
+                    document.getElementById('examDuration').value = config.duration;
+                    document.getElementById('examStatus').value = config.status;
+                    localStorage.setItem('config_id', config.id);
+                } else {
+                    let resNew = await fetch(`${API_URL}/questions`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({type: "config", duration: "15", status: "mở", content: "Cấu hình hệ thống"})
+                    });
+                    let newConf = await resNew.json();
+                    localStorage.setItem('config_id', newConf.id);
+                    document.getElementById('examDuration').value = "15";
+                    document.getElementById('examStatus').value = "mở";
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        async function updateExamConfig() {
+            const duration = document.getElementById('examDuration').value;
+            const status = document.getElementById('examStatus').value;
+            const configId = localStorage.getItem('config_id');
+            
+            await fetch(`${API_URL}/questions/${configId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({duration, status})
+            });
+            alert('Đã cập nhật cấu hình đề lên mạng!');
+        }
+
+        async function saveQuestion() {
+            const type = document.getElementById('quizType').value;
+            const content = document.getElementById('quizContent').value;
+            if(!content) return alert('Vui lòng nhập đề bài!');
+
+            let data = { type, content };
+            if(type === 'tracnghiem') {
+                data.answers = [
+                    document.getElementById('ansA').value,
+                    document.getElementById('ansB').value,
+                    document.getElementById('ansC').value,
+                    document.getElementById('ansD').value
+                ];
+                data.correct = document.getElementById('correctAnswer').value;
+            }
+
+            await fetch(`${API_URL}/questions`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            alert('Đã thêm câu hỏi lên mạng thành công!');
+            location.reload();
+        }
+
+        async function loadData() {
+            await loadExamConfig();
+            
+            let resQ = await fetch(`${API_URL}/questions`);
+            let allItems = await resQ.json();
+            let questions = allItems.filter(item => item.type !== 'config');
+
+            document.getElementById('listQuestions').innerHTML = questions.map((q, i) => `
+                <div class="list-box">
+                    <b>Câu ${i+1} [${q.type === 'tuluan' ? 'Tự luận' : 'Trắc nghiệm'}]:</b> ${q.content}
+                    ${q.type === 'tracnghiem' ? `<br><small>Đáp án đúng: ${q.correct}</small>` : ''}
+                </div>
+            `).join('');
+
+            let resS = await fetch(`${API_URL}/submissions`);
+            let submissions = await resS.json();
+            document.getElementById('adminSubmissionArea').innerHTML = submissions.map(s => `
+                <div class="list-box" style="border-left:5px solid #34a853;">
+                    <b>Thí sinh: ${s.studentName}</b> <br>
+                    <small>Thời gian nộp: ${s.submitAt}</small>
+                    <p><b>Nội dung bài làm:</b></p>
+                    ${s.answers.map((ans, idx) => `
+                        <div style="margin-left: 15px; margin-bottom: 5px;">
+                            + Câu ${idx+1}: Trả lời: <b style="color:#1a73e8">${ans.answer}</b>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+        loadData();
+    </script>
+</body>
+</html>
