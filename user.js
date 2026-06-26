@@ -1,5 +1,6 @@
 const USERS_DATABASE = [
-    { username: "L4M", password: "mocmeo090", role: "admin", fullname: "Quản Trị Viên" },
+    { username: "L4M", password: "mocmeo090", role: "admin", fullname: "L4M" },
+    { username: "boidongnai", password: "123456", role: "admin", fullname: "Boideptrai" },
     { username: "student1", password: "123", role: "student", fullname: "Nguyễn Văn A" },
     { username: "student2", password: "123", role: "student", fullname: "Trần Thị B" }
 ];
