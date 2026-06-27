@@ -66,7 +66,7 @@
 
     <script>
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
-        const BIN_ID = "6a3f8b72da38895dfe068e1f";
+        const BIN_ID = "6a3f9132da38895dfe06a006"; // Đã cập nhật Bin ID mới của bro
 
         const currentRole = localStorage.getItem('role');
         if (!currentRole || currentRole !== 'admin') {
@@ -74,8 +74,6 @@
         }
 
         document.getElementById('adminName').innerText = localStorage.getItem('fullname') || "Quản trị viên";
-
-        // Khởi tạo cấu trúc Object đồng bộ
         let serverData = { questions: [], submissions: [] };
 
         async function fetchCurrentData() {
@@ -84,14 +82,11 @@
                     headers: { 'X-Master-Key': MASTER_KEY }
                 });
                 let dataJson = await res.json();
-                
-                // Trích xuất đúng object từ thuộc tính record của JSONbin
                 if (dataJson.record) {
                     serverData.questions = dataJson.record.questions || [];
                     serverData.submissions = dataJson.record.submissions || [];
                 }
             } catch(e) {
-                console.log("Lỗi tải mạng, dùng tạm dữ liệu local");
                 serverData.questions = JSON.parse(localStorage.getItem('db_questions')) || [];
             }
             renderLocalQuestions();
@@ -121,7 +116,7 @@
 
             serverData.questions.push(data);
             localStorage.setItem('db_questions', JSON.stringify(serverData.questions));
-            alert('Đã thêm vào danh sách tạm thành công!');
+            alert('Đã thêm vào danh sách tạm!');
             renderLocalQuestions();
             document.getElementById('quizContent').value = "";
         }
@@ -133,61 +128,4 @@
             }
             document.getElementById('listQuestions').innerHTML = serverData.questions.map((q, i) => `
                 <div class="list-box">
-                    <button class="btn-delete" onclick="deleteQuestion(${i})">Xóa</button>
-                    <b>Câu ${i+1} [${q.type === 'tuluan' ? 'Tự luận' : 'Trắc nghiệm'}]:</b> ${q.content}
-                    ${q.type === 'tracnghiem' ? `<small><b>A:</b> ${q.answers[0]} | <b>B:</b> ${q.answers[1]} | <b>C:</b> ${q.answers[2]} | <b>D:</b> ${q.answers[3]} <br> <b style="color:var(--success)">Đúng: ${q.correct}</b></small>` : ''}
-                    <div style="clear:both;"></div>
-                </div>
-            `).join('');
-        }
-
-        function deleteQuestion(index) {
-            serverData.questions.splice(index, 1);
-            localStorage.setItem('db_questions', JSON.stringify(serverData.questions));
-            renderLocalQuestions();
-        }
-
-        async function syncToJSONbin() {
-            try {
-                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
-                    },
-                    body: JSON.stringify(serverData)
-                });
-                if(res.ok) {
-                    alert('Đã đồng bộ đề thi lên JSONbin thành công! Học sinh có thể tải lại trang để làm bài.');
-                } else {
-                    alert('Đồng bộ thất bại, vui lòng kiểm tra lại cấu trúc Bin!');
-                }
-            } catch(e) { alert('Lỗi kết nối mạng!'); }
-        }
-
-        function renderSubmissions() {
-            if(!serverData.submissions || serverData.submissions.length === 0) {
-                document.getElementById('adminSubmissionArea').innerHTML = "<p style='color:#7f8c8d;'>Chưa có học sinh nào nộp bài qua mạng.</p>";
-                return;
-            }
-            document.getElementById('adminSubmissionArea').innerHTML = serverData.submissions.map(s => `
-                <div class="list-box sub-item">
-                    <b>Thí sinh: <span style="color:var(--primary)">${s.studentName}</span></b> 
-                    <span style="float:right; font-weight:bold; color:${s.status && s.status.includes('Hủy') ? 'var(--danger)' : 'var(--success)'}">${s.status || 'Đã nộp'}</span>
-                    <br>
-                    <small>Thời gian nộp bài: ${s.submitAt}</small>
-                    <p style="margin: 5px 0; font-weight:bold;">Nội dung trả lời:</p>
-                    ${s.answers ? s.answers.map((ans, idx) => `
-                        <div style="margin-left: 15px; margin-bottom: 4px; font-size:14px;">
-                            + Câu ${idx+1}: Chọn/Viết: <b style="color:var(--secondary)">${ans.answer}</b>
-                        </div>
-                    `).join('') : 'Không có dữ liệu'}
-                </div>
-            `).join('');
-        }
-
-        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-        fetchCurrentData();
-    </script>
-</body>
-</html>
+                    <button class="btn-
