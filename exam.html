@@ -2,60 +2,176 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Phòng Làm Bài Thi Trực Tuyến</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Cyber Exam - Phòng Thi Đấu Trực Tuyến</title>
     <style>
         :root { 
-            --primary: #d35400; 
-            --secondary: #e67e22; 
-            --bg: #f1f5f9; 
-            --text: #334155; 
+            --bg-dark: #070a13;
+            --card-dark: #111726;
+            --neon-orange: #ff6b00;
+            --neon-yellow: #fff01f;
+            --neon-red: #ff3131;
+            --text-light: #e2e8f0;
         }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-light); 
+            margin: 0; 
+            padding: 10px; 
+            box-sizing: border-box;
+        }
         
-        .container { max-width: 800px; margin: 20px auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        h2 { text-align: center; color: #1e293b; margin-top: 0; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-        
-        /* Giao diện đồng hồ đếm ngược */
-        .timer-box { text-align: center; font-size: 22px; color: #b91c1c; font-weight: 700; margin-bottom: 25px; background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fee2e2; }
-        
-        /* Giao diện cảnh báo lỗi thoát tab */
-        .cheat-warning-box { text-align: center; background: #fff1f2; color: #e11d48; padding: 12px; border-radius: 10px; border: 2px solid #fecdd3; margin-bottom: 20px; font-weight: bold; animation: shake 0.4s ease-in-out; display: none; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+        /* Dải Matrix LED RGB Chạy Viền Trên Điện thoại & Máy tính */
+        .rgb-line {
+            height: 6px;
+            width: 100%;
+            position: fixed;
+            top: 0; left: 0; z-index: 9999;
+            background: linear-gradient(90deg, #ff0055, #00ff66, #00ffff, #ffcc00, #ff0055);
+            background-size: 300%;
+            animation: line-anim 6s linear infinite;
+        }
+        @keyframes line-anim {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
 
-        /* Block câu hỏi phòng thi */
-        .list-box { background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid var(--primary); padding: 22px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
-        .list-box p { margin-top: 0; font-size: 16px; font-weight: 600; color: #1e293b; line-height: 1.5; }
+        .container { 
+            max-width: 800px; 
+            margin: 25px auto 10px auto; 
+            background: var(--card-dark); 
+            padding: 20px 15px; 
+            border-radius: 14px; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255, 107, 0, 0.15); 
+        }
+        @media (min-width: 576px) { .container { padding: 35px; } }
+
+        h2 { 
+            text-align: center; 
+            color: #fff; 
+            margin-top: 0; 
+            font-size: 18px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            text-shadow: 0 0 12px rgba(255, 107, 0, 0.4);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 15px;
+        }
+        @media (min-width: 576px) { h2 { font-size: 22px; } }
         
-        .radio-group { margin: 10px 0; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; }
-        .radio-group:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .radio-group input { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+        /* Đồng hồ LED đỏ rực */
+        .timer-box { 
+            text-align: center; 
+            font-size: 18px; 
+            color: var(--neon-red); 
+            font-weight: 800; 
+            margin-bottom: 20px; 
+            background: rgba(255, 49, 49, 0.08); 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(255, 49, 49, 0.2); 
+            text-shadow: 0 0 10px rgba(255, 49, 49, 0.4);
+        }
+        @media (min-width: 576px) { .timer-box { font-size: 22px; } }
         
-        textarea.ans-input { width: 100%; height: 130px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; box-sizing: border-box; font-size: 14px; font-family: inherit; background: #fbfbfb; }
-        textarea.ans-input:focus { outline: none; border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 3px rgba(230,126,34,0.1); }
+        .cheat-warning-box { 
+            text-align: center; 
+            background: #2e1116; 
+            color: #ff4d4d; 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid var(--neon-red); 
+            margin-bottom: 20px; 
+            font-weight: bold; 
+            font-size: 13px;
+            animation: flash 0.5s infinite alternate; 
+            display: none; 
+        }
+        @keyframes flash { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* Block câu hỏi */
+        .list-box { 
+            background: #171f33; 
+            border: 1px solid rgba(255,255,255,0.04); 
+            border-left: 5px solid var(--neon-orange); 
+            padding: 16px; 
+            margin-bottom: 18px; 
+            border-radius: 8px; 
+        }
+        .list-box p { margin-top: 0; font-size: 15px; font-weight: 600; color: #fff; line-height: 1.5; }
         
-        .btn-success { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; box-shadow: 0 4px 12px rgba(211,84,0,0.25); transition: all 0.2s; }
-        .btn-success:hover { filter: brightness(1.05); }
+        /* Tối ưu hóa phím chọn Trắc nghiệm siêu to khổng lồ cho màn hình cảm ứng điện thoại */
+        .radio-group { 
+            margin: 10px 0; 
+            padding: 14px 16px; 
+            background: #1f2a45; 
+            border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.05); 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .radio-group:pointerdown, .radio-group:active { background: #2a3b61; }
+        .radio-group input { 
+            margin-right: 14px; 
+            transform: scale(1.3); 
+            cursor: pointer; 
+            accent-color: var(--neon-orange);
+        }
+        
+        textarea.ans-input { 
+            width: 100%; 
+            height: 110px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            padding: 12px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            background: #1f2a45; 
+            color: #fff;
+        }
+        textarea.ans-input:focus { outline: none; border-color: var(--neon-orange); }
+        
+        .btn-success { 
+            background: linear-gradient(135deg, var(--neon-orange), #b84d00); 
+            color: white; 
+            border: none; 
+            padding: 15px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%; 
+            margin-top: 15px; 
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.3);
+            text-transform: uppercase;
+        }
+        .btn-success:hover { box-shadow: 0 0 25px var(--neon-orange); }
     </style>
 </head>
 <body>
+    <div class="rgb-line"></div>
     <div class="container">
-        <h2>🔥 HỆ THỐNG PHÒNG THI KIỂM TRA TRỰC TUYẾN 🔥</h2>
-        <div class="timer-box">⏳ Thời gian làm bài còn lại: <span id="countdown">15:00</span></div>
+        <h2>🔥 CYBER ARENA COMPETE ROOM 🔥</h2>
+        <div class="timer-box">⏳ CLOCK COUNTDOWN: <span id="countdown">15:00</span></div>
         
-        <div id="cheatWarning" class="cheat-warning-box">🛑 CẢNH BÁO PHÁT HIỆN GIAN LẬN: Bạn đã rời màn hình thi <span id="cheatCount">0</span>/3 lần! Nếu vi phạm lần thứ 3 hệ thống sẽ tự động nộp bài.</div>
+        <div id="cheatWarning" class="cheat-warning-box">🛑 PHÁT HIỆN RỜI PHÒNG: <span id="cheatCount">0</span>/3 LẦN VI PHẠM! HỆ THỐNG SẼ TỰ ĐỘNG KHÓA BÀI NẾU QUÁ GIỚI HẠN.</div>
 
-        <div id="examArea">Đang đồng bộ dữ liệu đề thi từ JSONbin Cloud...</div>
+        <div id="examArea" style="text-align:center; color:#94a3b8; padding:20px;">Đang thiết lập cổng kết nối bảo mật JSONbin...</div>
         <br>
-        <button class="btn-success" onclick="submitExam(false)">🎯 HOÀN THÀNH & NỘP BÀI THI</button>
+        <button class="btn-success" onclick="submitExam(false)">🎯 KHÓA MODULE & NỘP BÀI THI</button>
     </div>
 
     <script>
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
         const BIN_ID = "6a3f9132da38895dfe06a006"; 
 
-        if (!localStorage.getItem('role')) {
-            localStorage.setItem('role', 'student');
-        }
+        if (!localStorage.getItem('role')) { localStorage.setItem('role', 'student'); }
 
         let currentData = { questions: [], submissions: [] };
         let timer;
@@ -64,19 +180,15 @@
 
         function handleCheatDetect() {
             if (isSubmitted) return; 
-
             cheatAttempts++;
-            const warningBox = document.getElementById('cheatWarning');
-            const countSpan = document.getElementById('cheatCount');
-            
-            warningBox.style.display = "block";
-            countSpan.innerText = cheatAttempts;
+            document.getElementById('cheatWarning').style.display = "block";
+            document.getElementById('cheatCount').innerText = cheatAttempts;
 
             if (cheatAttempts >= 3) {
-                alert('🔴 CƯỠNG CHẾ THU BÀI: Bạn vi phạm quy chế rời phòng thi quá 3 lần!');
+                alert('🔴 PHÒNG THI BỊ KHÓA: Hủy quyền thi đấu do gian lận thoát tab quá 3 lần!');
                 submitExam(true); 
             } else {
-                alert(`⚠️ CẢNH BÁO TRƯỜNG THI!\nBạn vừa rời tab bài làm (Lần vi phạm: ${cheatAttempts}/3).`);
+                alert(`⚠️ CẢNH BÁO AN NINH TRƯỜNG THI!\nBạn vừa rời tab bài làm (Lần vi phạm: ${cheatAttempts}/3).`);
             }
         }
 
@@ -107,7 +219,7 @@
                 }
 
                 if(!currentData.questions || currentData.questions.length === 0) {
-                    area.innerHTML = "<p style='text-align:center; color:#64748b; font-style:italic;'>Hiện tại chưa mở câu hỏi thi!</p>";
+                    area.innerHTML = "<p style='text-align:center; color:#94a3b8; font-style:italic;'>Trận đấu chưa có đề bài!</p>";
                     return;
                 }
 
@@ -116,7 +228,7 @@
                         return `
                             <div class="list-box quiz" data-id="${q.id}" data-type="tuluan">
                                 <p>Câu ${i+1} (Tự luận): ${q.content}</p>
-                                <textarea class="ans-input" placeholder="Nhập phần trả lời tự luận của thí sinh..."></textarea>
+                                <textarea class="ans-input" placeholder="Nhập chuỗi đáp án tự luận vào đây..."></textarea>
                             </div>
                         `;
                     } else {
@@ -131,7 +243,7 @@
                         `;
                     }
                 }).join('');
-            } catch(e) { area.innerHTML = "<p style='color:red; text-align:center;'>❌ Lỗi: Không thể kết nối với JSONbin!</p>"; }
+            } catch(e) { area.innerHTML = "<p style='color:var(--neon-red); text-align:center;'>❌ Lỗi liên kết JSONbin Server!</p>"; }
         }
 
         async function submitExam(isForced = false) {
@@ -151,11 +263,11 @@
                     const checked = block.querySelector('input:checked');
                     if(checked) answerValue = checked.value;
                 }
-                studentAnswers.push({ answer: answerValue || (isForced ? "Bị thu bài do gian lận" : "Bỏ trống") });
+                studentAnswers.push({ answer: answerValue || (isForced ? "Bị ép nộp (Gian lận)" : "Bỏ trống") });
             });
 
             let newSubmission = {
-                studentName: localStorage.getItem('fullname') || "Học sinh ẩn danh",
+                studentName: localStorage.getItem('fullname') || "Gamer Ẩn Danh",
                 submitAt: new Date().toLocaleString(),
                 answers: studentAnswers,
                 status: isForced ? `Hủy bài (Rời tab ${cheatAttempts} lần)` : "Nộp bài hợp lệ"
@@ -171,12 +283,10 @@
                     body: JSON.stringify(currentData)
                 });
                 if(res.ok) {
-                    alert(isForced ? 'Bài thi đã bị khóa tự động với trạng thái VI PHẠM!' : 'Hệ thống đã gửi bài làm lên JSONbin thành công!');
+                    alert(isForced ? 'Hệ thống đã khóa bài do vi phạm!' : 'Đã truyền dữ liệu bài làm lên JSONbin thành công!');
                     window.location.href = 'result.html';
-                } else {
-                    alert('Lỗi nộp bài!');
-                }
-            } catch(e) { alert('Mất kết nối Internet!'); }
+                } else { alert('Lỗi tải dữ liệu!'); }
+            } catch(e) { alert('Mất kết nối mạng!'); }
         }
 
         startExam();
