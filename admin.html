@@ -68,7 +68,6 @@
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
         const BIN_ID = "6a3f8b72da38895dfe068e1f";
 
-        // Kiểm tra quyền an toàn bảo mật khi vào trang
         const currentRole = localStorage.getItem('role');
         if (!currentRole || currentRole !== 'admin') {
             window.location.href = 'index.html';
@@ -76,6 +75,7 @@
 
         document.getElementById('adminName').innerText = localStorage.getItem('fullname') || "Quản trị viên";
 
+        // Khởi tạo cấu trúc Object đồng bộ
         let serverData = { questions: [], submissions: [] };
 
         async function fetchCurrentData() {
@@ -85,11 +85,13 @@
                 });
                 let dataJson = await res.json();
                 
-                if (dataJson.record && typeof dataJson.record === 'object') {
+                // Trích xuất đúng object từ thuộc tính record của JSONbin
+                if (dataJson.record) {
                     serverData.questions = dataJson.record.questions || [];
                     serverData.submissions = dataJson.record.submissions || [];
                 }
             } catch(e) {
+                console.log("Lỗi tải mạng, dùng tạm dữ liệu local");
                 serverData.questions = JSON.parse(localStorage.getItem('db_questions')) || [];
             }
             renderLocalQuestions();
@@ -119,7 +121,7 @@
 
             serverData.questions.push(data);
             localStorage.setItem('db_questions', JSON.stringify(serverData.questions));
-            alert('Đã thêm vào danh sách tạm!');
+            alert('Đã thêm vào danh sách tạm thành công!');
             renderLocalQuestions();
             document.getElementById('quizContent').value = "";
         }
@@ -155,8 +157,11 @@
                     },
                     body: JSON.stringify(serverData)
                 });
-                if(res.ok) alert('Đã đồng bộ đề thi lên JSONbin thành công! Học sinh có thể làm bài ngay.');
-                else alert('Đồng bộ thất bại, hãy kiểm tra lại cấu trúc Bin!');
+                if(res.ok) {
+                    alert('Đã đồng bộ đề thi lên JSONbin thành công! Học sinh có thể tải lại trang để làm bài.');
+                } else {
+                    alert('Đồng bộ thất bại, vui lòng kiểm tra lại cấu trúc Bin!');
+                }
             } catch(e) { alert('Lỗi kết nối mạng!'); }
         }
 
@@ -168,7 +173,7 @@
             document.getElementById('adminSubmissionArea').innerHTML = serverData.submissions.map(s => `
                 <div class="list-box sub-item">
                     <b>Thí sinh: <span style="color:var(--primary)">${s.studentName}</span></b> 
-                    <span style="float:right; font-weight:bold; color:${s.status.includes('Hủy') ? 'var(--danger)' : 'var(--success)'}">${s.status || 'Đã nộp'}</span>
+                    <span style="float:right; font-weight:bold; color:${s.status && s.status.includes('Hủy') ? 'var(--danger)' : 'var(--success)'}">${s.status || 'Đã nộp'}</span>
                     <br>
                     <small>Thời gian nộp bài: ${s.submitAt}</small>
                     <p style="margin: 5px 0; font-weight:bold;">Nội dung trả lời:</p>
