@@ -81,7 +81,35 @@
 
         function submitExam() {
             clearInterval(timer);
-            alert('Bài làm của học sinh đã ghi nhận thành công!');
+            const quizBlocks = document.querySelectorAll('.quiz');
+            let studentAnswers = [];
+
+            quizBlocks.forEach(block => {
+                const type = block.getAttribute('data-type');
+                let answerValue = "";
+
+                if(type === 'tuluan') {
+                    answerValue = block.querySelector('.ans-input').value;
+                } else {
+                    const checked = block.querySelector('input:checked');
+                    if(checked) answerValue = checked.value;
+                }
+
+                studentAnswers.push({
+                    answer: answerValue || "Bỏ trống / Không làm"
+                });
+            });
+
+            // Lưu bài nộp vào bộ nhớ chung để trang Admin có thể đọc ngay lập tức
+            let currentSubmissions = JSON.parse(localStorage.getItem('global_submissions')) || [];
+            currentSubmissions.push({
+                studentName: localStorage.getItem('fullname') || "Học sinh ẩn danh",
+                submitAt: new Date().toLocaleString(),
+                answers: studentAnswers
+            });
+            localStorage.setItem('global_submissions', JSON.stringify(currentSubmissions));
+
+            alert('Nộp bài thành công! Ghi nhận kết quả thi thời gian thực.');
             window.location.href = 'result.html';
         }
 
