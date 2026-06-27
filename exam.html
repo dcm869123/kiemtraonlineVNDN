@@ -12,14 +12,14 @@
         }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         
-        .container { max-width: 800px; margin: 20px auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         h2 { text-align: center; color: #1e293b; margin-top: 0; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
         
         /* Giao diện đồng hồ đếm ngược */
-        .timer-box { text-align: center; font-size: 22px; color: #b91c1c; font-weight: 700; margin-bottom: 25px; background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fee2e2; box-shadow: inset 0 2px 4px rgba(185,28,28,0.02); }
+        .timer-box { text-align: center; font-size: 22px; color: #b91c1c; font-weight: 700; margin-bottom: 25px; background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fee2e2; }
         
-        /* Giao diện cảnh báo lỗi thoát tab siêu căng */
-        .cheat-warning-box { text-align: center; background: #fff1f2; color: #e11d48; padding: 12px; border-radius: 10px; border: 2px solid #fecdd3; margin-bottom: 20px; font-weight: bold; animation: shake 0.4s ease-in-out; display: none; box-shadow: 0 4px 6px rgba(225,29,72,0.05); }
+        /* Giao diện cảnh báo lỗi thoát tab */
+        .cheat-warning-box { text-align: center; background: #fff1f2; color: #e11d48; padding: 12px; border-radius: 10px; border: 2px solid #fecdd3; margin-bottom: 20px; font-weight: bold; animation: shake 0.4s ease-in-out; display: none; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
 
         /* Block câu hỏi phòng thi */
@@ -34,7 +34,7 @@
         textarea.ans-input:focus { outline: none; border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 3px rgba(230,126,34,0.1); }
         
         .btn-success { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; box-shadow: 0 4px 12px rgba(211,84,0,0.25); transition: all 0.2s; }
-        .btn-success:hover { filter: brightness(1.05); box-shadow: 0 6px 15px rgba(211,84,0,0.35); }
+        .btn-success:hover { filter: brightness(1.05); }
     </style>
 </head>
 <body>
@@ -42,25 +42,26 @@
         <h2>🔥 HỆ THỐNG PHÒNG THI KIỂM TRA TRỰC TUYẾN 🔥</h2>
         <div class="timer-box">⏳ Thời gian làm bài còn lại: <span id="countdown">15:00</span></div>
         
-        <div id="cheatWarning" class="cheat-warning-box">🛑 CẢNH BÁO PHÁT HIỆN GIAN LẬN: Bạn đã rời màn hình thi <span id="cheatCount">0</span>/3 lần! Nếu vi phạm lần thứ 3 hệ thống sẽ tự động nộp bài lập tức.</div>
+        <div id="cheatWarning" class="cheat-warning-box">🛑 CẢNH BÁO PHÁT HIỆN GIAN LẬN: Bạn đã rời màn hình thi <span id="cheatCount">0</span>/3 lần! Nếu vi phạm lần thứ 3 hệ thống sẽ tự động nộp bài.</div>
 
-        <div id="examArea">Đang đồng bộ và giải mã mã đề bảo mật từ JSONbin...</div>
+        <div id="examArea">Đang đồng bộ dữ liệu đề thi từ JSONbin Cloud...</div>
         <br>
         <button class="btn-success" onclick="submitExam(false)">🎯 HOÀN THÀNH & NỘP BÀI THI</button>
     </div>
 
     <script>
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
-        const BIN_ID = "6a3f9132da38895dfe06a006"; // Đã loại bỏ chữ 'x' sai sót
+        const BIN_ID = "6a3f9132da38895dfe06a006"; 
 
-        if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
+        if (!localStorage.getItem('role')) {
+            localStorage.setItem('role', 'student');
+        }
 
         let currentData = { questions: [], submissions: [] };
         let timer;
         let cheatAttempts = 0; 
         let isSubmitted = false; 
 
-        // --- HÀM KIỂM TRA CHỐNG THOÁT TAB / MỞ TAB AI ---
         function handleCheatDetect() {
             if (isSubmitted) return; 
 
@@ -72,21 +73,17 @@
             countSpan.innerText = cheatAttempts;
 
             if (cheatAttempts >= 3) {
-                alert('🔴 PHẠT QUY CHẾ: Bạn vi phạm quy chế rời phòng thi quá 3 lần để tra cứu/dùng AI. Hệ thống tiến hành cưỡng chế thu bài!');
+                alert('🔴 CƯỠNG CHẾ THU BÀI: Bạn vi phạm quy chế rời phòng thi quá 3 lần!');
                 submitExam(true); 
             } else {
-                alert(`⚠️ CẢNH BÁO TRƯỜNG THI!\nBạn vừa rời tab bài làm (Lần vi phạm: ${cheatAttempts}/3).\nMọi hành vi sử dụng AI giải đề sẽ bị ghi nhận trạng thái hủy bài!`);
+                alert(`⚠️ CẢNH BÁO TRƯỜNG THI!\nBạn vừa rời tab bài làm (Lần vi phạm: ${cheatAttempts}/3).`);
             }
         }
 
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'hidden') handleCheatDetect();
         });
-        window.addEventListener('blur', function() {
-            handleCheatDetect();
-        });
 
-        // --- ĐỔ CÂU HỎI TỪ CLOUD ---
         async function startExam() {
             let timeLeft = 15 * 60;
             timer = setInterval(() => {
@@ -110,7 +107,7 @@
                 }
 
                 if(!currentData.questions || currentData.questions.length === 0) {
-                    area.innerHTML = "<p style='text-align:center; color:#64748b; font-style:italic;'>Admin hiện tại đang khóa đề, chưa mở câu hỏi thi!</p>";
+                    area.innerHTML = "<p style='text-align:center; color:#64748b; font-style:italic;'>Hiện tại chưa mở câu hỏi thi!</p>";
                     return;
                 }
 
@@ -134,10 +131,9 @@
                         `;
                     }
                 }).join('');
-            } catch(e) { area.innerHTML = "<p style='color:red; text-align:center;'>❌ Lỗi nghiêm trọng: Không thể giải mã đề thi từ Cloud Server!</p>"; }
+            } catch(e) { area.innerHTML = "<p style='color:red; text-align:center;'>❌ Lỗi: Không thể kết nối với JSONbin!</p>"; }
         }
 
-        // --- GỬI DỮ LIỆU LÊN SERVER ---
         async function submitExam(isForced = false) {
             if (isSubmitted) return;
             isSubmitted = true;
@@ -162,7 +158,7 @@
                 studentName: localStorage.getItem('fullname') || "Học sinh ẩn danh",
                 submitAt: new Date().toLocaleString(),
                 answers: studentAnswers,
-                status: isForced ? `Hủy bài (Gian lận rời tab ${cheatAttempts} lần)` : "Nộp bài hợp lệ"
+                status: isForced ? `Hủy bài (Rời tab ${cheatAttempts} lần)` : "Nộp bài hợp lệ"
             };
 
             if(!currentData.submissions) currentData.submissions = [];
@@ -175,12 +171,12 @@
                     body: JSON.stringify(currentData)
                 });
                 if(res.ok) {
-                    alert(isForced ? 'Bài thi đã bị khóa nộp tự động với trạng thái VI PHẠM!' : 'Hệ thống đã thu và tải bài làm của bạn lên Máy chủ thành công!');
+                    alert(isForced ? 'Bài thi đã bị khóa tự động với trạng thái VI PHẠM!' : 'Hệ thống đã gửi bài làm lên JSONbin thành công!');
                     window.location.href = 'result.html';
                 } else {
-                    alert('Lỗi phản hồi mạng khi nộp bài!');
+                    alert('Lỗi nộp bài!');
                 }
-            } catch(e) { alert('Mất kết nối Internet, không thể đồng bộ bài làm!'); }
+            } catch(e) { alert('Mất kết nối Internet!'); }
         }
 
         startExam();
