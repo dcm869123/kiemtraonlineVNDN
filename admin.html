@@ -4,19 +4,11 @@
     <meta charset="UTF-8">
     <title>Admin - Quản Trị Đề Thi</title>
     <style>
-        :root {
-            --primary: #1e3c72;
-            --secondary: #2a5298;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --bg: #f5f7fa;
-            --text: #2c3e50;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        :root { --primary: #1e3c72; --secondary: #2a5298; --success: #2ecc71; --warning: #f39c12; --danger: #e74c3c; --bg: #f5f7fa; --text: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
         h2 { color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; margin-top: 0; }
-        h3 { color: var(--secondary); margin-top: 25px; display: flex; align-items: center; }
+        h3 { color: var(--secondary); margin-top: 25px; }
         label { font-weight: bold; display: block; margin: 10px 0 5px; color: #34495e; }
         input[type="text"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; margin-bottom: 10px; }
         textarea { height: 100px; resize: vertical; }
@@ -26,9 +18,7 @@
         .btn-sync { background: linear-gradient(135deg, #e67e22, #f39c12); width: 100%; font-size: 16px; padding: 15px; margin-top: 15px; box-shadow: 0 4px 10px rgba(230,126,34,0.3); }
         .btn-secondary { background: #7f8c8d; float: right; }
         .clear { clear: both; }
-        .list-box { background: #f8f9fa; border-left: 5px solid var(--secondary); padding: 15px; margin: 10px 0; border-radius: 4px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .quiz-item { border-left-color: #9b59b6; }
-        .sub-item { border-left-color: var(--success); background: #f0fdf4; }
+        .list-box { background: #f8f9fa; border-left: 5px solid var(--secondary); padding: 15px; margin: 10px 0; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         .btn-delete { background: var(--danger); padding: 5px 10px; font-size: 12px; float: right; border-radius: 4px; }
         small { color: #7f8c8d; font-size: 13px; display: block; margin-top: 5px; }
     </style>
@@ -63,18 +53,16 @@
                 <option value="D">D</option>
             </select>
         </div>
-        <button class="btn-success" onclick="saveQuestion()">+ THÊM VÀO DANH SÁCH CÂU HỎI TẠM THỜI</button>
+        <button class="btn-success" onclick="saveQuestion()">+ THÊM VÀO DANH SÁCH TẠM THỜI</button>
 
         <h3>2. Cấu Trúc Đề Thi Hiện Tại (Chờ Đồng Bộ)</h3>
         <div id="listQuestions">Đang tải cấu trúc câu hỏi cục bộ...</div>
-        <button class="btn-sync" onclick="syncToBeeceptor()">⚡ ĐỒNG BỘ TOÀN BỘ ĐỀ LÊN SERVER BEECEPTOR</button>
-
-        <h3>3. Danh Sách Bài Làm Thí Sinh Nộp Về</h3>
-        <div id="adminSubmissionArea">Đang tải danh sách bài nộp...</div>
+        <button class="btn-sync" onclick="syncToJSONbin()">⚡ ĐỒNG BỘ ĐỀ LÊN MẠNG (JSONBIN)</button>
     </div>
 
     <script>
-        const API_URL = "https://k12-cua-lam.free.beeceptor.com"; // THAY LINK CỦA BẠN VÀO ĐÂY
+        const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
+        const BIN_ID = "6a3f8b72da38895dfe068e1f";
 
         if (localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
         document.getElementById('adminName').innerText = localStorage.getItem('fullname');
@@ -91,9 +79,7 @@
             const content = document.getElementById('quizContent').value;
             if(!content) return alert('Vui lòng điền đề bài!');
 
-            let newId = Date.now().toString();
-            let data = { id: newId, type, content };
-            
+            let data = { id: Date.now().toString(), type, content };
             if(type === 'tracnghiem') {
                 data.answers = [
                     document.getElementById('ansA').value || "Đáp án A",
@@ -106,21 +92,21 @@
 
             localQuestions.push(data);
             localStorage.setItem('db_questions', JSON.stringify(localQuestions));
-            alert('Đã thêm thành công!');
+            alert('Đã thêm vào danh sách tạm!');
             renderLocalQuestions();
             document.getElementById('quizContent').value = "";
         }
 
         function renderLocalQuestions() {
             if(localQuestions.length === 0) {
-                document.getElementById('listQuestions').innerHTML = "<p style='color:#7f8c8d; font-style:italic;'>Chưa có câu hỏi nào được tạo. Hãy tạo câu hỏi ở mục 1.</p>";
+                document.getElementById('listQuestions').innerHTML = "<p style='color:#7f8c8d; font-style:italic;'>Chưa có câu hỏi nào. Hãy tạo câu hỏi ở mục 1.</p>";
                 return;
             }
             document.getElementById('listQuestions').innerHTML = localQuestions.map((q, i) => `
-                <div class="list-box quiz-item">
+                <div class="list-box">
                     <button class="btn-delete" onclick="deleteQuestion(${i})">Xóa</button>
                     <b>Câu ${i+1} [${q.type === 'tuluan' ? 'Tự luận' : 'Trắc nghiệm'}]:</b> ${q.content}
-                    ${q.type === 'tracnghiem' ? `<small><b>A:</b> ${q.answers[0]} | <b>B:</b> ${q.answers[1]} | <b>C:</b> ${q.answers[2]} | <b>D:</b> ${q.answers[3]} <br> <b style="color:var(--success)">Đáp án đúng: ${q.correct}</b></small>` : ''}
+                    ${q.type === 'tracnghiem' ? `<small><b>A:</b> ${q.answers[0]} | <b>B:</b> ${q.answers[1]} | <b>C:</b> ${q.answers[2]} | <b>D:</b> ${q.answers[3]} <br> <b style="color:var(--success)">Đúng: ${q.correct}</b></small>` : ''}
                     <div style="clear:both;"></div>
                 </div>
             `).join('');
@@ -132,42 +118,4 @@
             renderLocalQuestions();
         }
 
-        async function syncToBeeceptor() {
-            try {
-                await fetch(`${API_URL}/questions`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(localQuestions)
-                });
-                alert('Đã đồng bộ toàn bộ đề thi lên mạng Beeceptor thành công!');
-            } catch(e) { alert('Lỗi kết nối hoặc sai link API!'); }
-        }
-
-        async function loadSubmissions() {
-            try {
-                let res = await fetch(`${API_URL}/submissions`);
-                let submissions = await res.json();
-                if(!Array.isArray(submissions)) submissions = [submissions];
-                document.getElementById('adminSubmissionArea').innerHTML = submissions.map(s => `
-                    <div class="list-box sub-item">
-                        <b>Thí sinh: <span style="color:var(--primary)">${s.studentName || 'Ẩn danh'}</span></b> <br>
-                        <small>Thời gian nộp bài: ${s.submitAt}</small>
-                        <p style="margin: 5px 0; font-weight:bold;">Nội dung trả lời:</p>
-                        ${s.answers ? s.answers.map((ans, idx) => `
-                            <div style="margin-left: 15px; margin-bottom: 4px; font-size:14px;">
-                                + Câu ${idx+1}: Chọn/Viết: <b style="color:var(--secondary)">${ans.answer}</b>
-                            </div>
-                        `).join('') : 'Không có dữ liệu'}
-                    </div>
-                `).join('');
-            } catch(e) {
-                document.getElementById('adminSubmissionArea').innerText = "Chưa có bài nộp nào trên hệ thống mạng.";
-            }
-        }
-
-        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-        renderLocalQuestions();
-        loadSubmissions();
-    </script>
-</body>
-</html>
+        async function syncTo
