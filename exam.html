@@ -8,6 +8,7 @@
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h2 { text-align: center; color: #d35400; margin-top: 0; text-transform: uppercase; }
         .timer-box { text-align: center; font-size: 24px; color: #c0392b; font-weight: bold; margin-bottom: 20px; background: #fdf2e9; padding: 15px; border-radius: 8px; border: 1px dashed #e59866; }
+        .cheat-warning-box { text-align: center; background: #fdf2f2; color: #ec5c5c; padding: 10px; border-radius: 8px; border: 1px solid #f5b7b7; margin-bottom: 15px; font-weight: bold; display: none; }
         .list-box { background: #fff; border: 1px solid #e0e0e0; border-left: 5px solid #d35400; padding: 20px; margin-bottom: 15px; border-radius: 6px; }
         .radio-group { margin: 10px 0; padding: 8px 12px; background: #fcfcfc; border-radius: 6px; border: 1px solid #f0f0f0; }
         .radio-group input { margin-right: 10px; transform: scale(1.1); }
@@ -19,19 +20,60 @@
     <div class="container">
         <h2>🔥 PHÒNG THI ONLINE XIN CHÀO 🔥</h2>
         <div class="timer-box">⏳ Thời gian còn lại: <span id="countdown">15:00</span></div>
+        
+        <div id="cheatWarning" class="cheat-warning-box">⚠️ CẢNH BÁO GIAN LẬN: Bạn đã rời tab <span id="cheatCount">0</span>/3 lần! Vi phạm quá 3 lần hệ thống sẽ tự động nộp bài.</div>
+
         <div id="examArea">Đang nạp đề thi bảo mật từ JSONbin...</div>
         <br>
-        <button class="btn-success" onclick="submitExam()">🎯 NỘP BÀI THI</button>
+        <button class="btn-success" onclick="submitExam(false)">🎯 NỘP BÀI THI</button>
     </div>
 
     <script>
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
         const BIN_ID = "6a3f8b72da38895dfe068e1f";
 
-        if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
+        // Kiểm tra quyền an toàn khi vào phòng thi
+        const currentRole = localStorage.getItem('role');
+        if (!currentRole || currentRole !== 'student') {
+            window.location.href = 'index.html';
+        }
 
         let currentData = { questions: [], submissions: [] };
         let timer;
+        let cheatAttempts = 0; 
+        let isSubmitted = false; 
+
+        // --- HÀM XỬ LÝ PHÁT HIỆN GIAN LẬN RỜI TAB ---
+        function handleCheatDetect() {
+            if (isSubmitted) return; 
+
+            cheatAttempts++;
+            const warningBox = document.getElementById('cheatWarning');
+            const countSpan = document.getElementById('cheatCount');
+            
+            warningBox.style.display = "block";
+            countSpan.innerText = cheatAttempts;
+
+            if (cheatAttempts >= 3) {
+                alert('🔴 BẠN ĐÃ VI PHẠM QUY CHẾ THI QUÁ 3 LẦN (Thoát tab tra cứu hoặc dùng AI). Hệ thống tự động thu bài và nộp ngay lập tức!');
+                submitExam(true); 
+            } else {
+                alert(`⚠️ CẢNH BÁO GIAN LẬN!\nBạn vừa rời khỏi màn hình bài thi (Lần ${cheatAttempts}/3).\nNếu tiếp tục thoát tab để dùng AI giải bài, hệ thống sẽ tự động khóa bài làm!`);
+            }
+        }
+
+        // Theo dõi xem tab có bị ẩn đi không (Học sinh mở tab mới)
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                handleCheatDetect();
+            }
+        });
+
+        // Theo dõi xem học sinh có click chuột ra ngoài cửa sổ không (Mở app AI khác đè lên)
+        window.addEventListener('blur', function() {
+            handleCheatDetect();
+        });
+        // ---------------------------------------------
 
         async function startExam() {
             let timeLeft = 15 * 60;
@@ -39,7 +81,7 @@
                 let min = Math.floor(timeLeft / 60);
                 let sec = timeLeft % 60;
                 document.getElementById('countdown').innerText = `${min < 10 ? '0'+min : min}:${sec < 10 ? '0'+sec : sec}`;
-                if(timeLeft <= 0) { clearInterval(timer); submitExam(); }
+                if(timeLeft <= 0) { clearInterval(timer); submitExam(false); }
                 timeLeft--;
             }, 1000);
 
@@ -87,8 +129,11 @@
             } catch(e) { area.innerHTML = "<p style='color:red;'>Lỗi không thể tải đề thi từ JSONbin!</p>"; }
         }
 
-        async function submitExam() {
+        async function submitExam(isForced = false) {
+            if (isSubmitted) return;
+            isSubmitted = true;
             clearInterval(timer);
+
             const quizBlocks = document.querySelectorAll('.quiz');
             let studentAnswers = [];
 
@@ -104,21 +149,21 @@
                 }
 
                 studentAnswers.push({
-                    answer: answerValue || "Bỏ trống / Không làm"
+                    answer: answerValue || (isForced ? "Bị khóa do gian lận" : "Bỏ trống")
                 });
             });
 
             let newSubmission = {
                 studentName: localStorage.getItem('fullname') || "Học sinh ẩn danh",
                 submitAt: new Date().toLocaleString(),
-                answers: studentAnswers
+                answers: studentAnswers,
+                status: isForced ? `Hủy bài (Gian lận thoát tab ${cheatAttempts} lần)` : "Nộp bài hợp lệ"
             };
 
             if(!currentData.submissions) currentData.submissions = [];
             currentData.submissions.push(newSubmission);
 
             try {
-                // Đẩy trực tiếp bộ dữ liệu bao gồm cả bài nộp mới lên mây JSONbin
                 let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
                     headers: {
@@ -129,10 +174,10 @@
                 });
                 
                 if(res.ok) {
-                    alert('Nộp bài thành công lên Server mạng!');
+                    alert(isForced ? 'Bài thi đã bị khóa và nộp lên hệ thống với trạng thái GIAN LẬN!' : 'Nộp bài thành công lên Server mạng!');
                     window.location.href = 'result.html';
                 } else {
-                    alert('Lỗi gửi bài lên Server, vui lòng thử lại!');
+                    alert('Lỗi gửi bài lên Server!');
                 }
             } catch(e) {
                 alert('Lỗi kết nối mạng, không thể nộp bài!');
