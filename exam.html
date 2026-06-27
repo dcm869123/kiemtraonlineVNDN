@@ -9,78 +9,60 @@
     <div class="container">
         <h2>PHÒNG THI ONLINE</h2>
         <div style="text-align: center; font-size: 20px; color: red; font-weight: bold; margin-bottom: 20px;">
-            Thời gian còn lại: <span id="countdown">--:--</span>
+            Thời gian làm bài mặc định: 15 phút
         </div>
         <hr>
-        <div id="examArea">Đang tải đề thi từ hệ thống mạng...</div>
+        <div id="examArea">Đang tải đề thi từ hệ thống Beeceptor...</div>
         <br>
-        <button class="btn-success" onclick="submitExam()">NỘP BÀI THI</button>
+        <button class="btn-success" onclick="submitExam()">NỘP BÀI THI THỜI GIAN THỰC</button>
     </div>
 
     <script>
-        // DÁN ĐOẠN LINK MOCKAPI CỦA BẠN VÀO ĐÂY
-        const API_URL = "https://6a3e27c20443193a1a0b847a.mockapi.io/questions"; 
+        // THAY LINK BEECEPTOR CỦA BẠN VÀO ĐÂY ĐỒNG BỘ VỚI ADMIN
+        const API_URL = "https://k12-cua-lam.free.beeceptor.com"; 
 
         if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
 
-        let timer;
+        let questions = [];
 
         async function startExam() {
-            let res = await fetch(`${API_URL}/questions`);
-            let allItems = await res.json();
-            
-            let examConfig = allItems.find(item => item.type === 'config') || {duration: "15", status: "mở"};
-            let questions = allItems.filter(item => item.type !== 'config');
-
-            if(examConfig.status === 'đóng') {
-                alert('Đề thi đã đóng!');
-                window.location.href = 'dashboard.html';
-                return;
-            }
-
-            let timeLeft = parseInt(examConfig.duration) * 60;
-            timer = setInterval(() => {
-                let min = Math.floor(timeLeft / 60);
-                let sec = timeLeft % 60;
-                document.getElementById('countdown').innerText = `${min < 10 ? '0'+min : min}:${sec < 10 ? '0'+sec : sec}`;
-                if(timeLeft <= 0) {
-                    clearInterval(timer);
-                    alert('Hết giờ làm bài! Hệ thống tự động nộp bài.');
-                    submitExam();
-                }
-                timeLeft--;
-            }, 1000);
-            
             const area = document.getElementById('examArea');
-            if(questions.length === 0) {
-                area.innerHTML = "<p>Đề chưa có câu hỏi nào!</p>";
-                return;
-            }
-
-            area.innerHTML = questions.map((q, i) => {
-                if(q.type === 'tuluan') {
-                    return `
-                        <div class="list-box quiz" data-id="${q.id}" data-type="tuluan">
-                            <p><b>Câu ${i+1} (Tự luận):</b> ${q.content}</p>
-                            <textarea class="ans-input" placeholder="Gõ câu trả lời của bạn tại đây..."></textarea>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div class="list-box quiz" data-id="${q.id}" data-type="tracnghiem">
-                            <p><b>Câu ${i+1} (Trắc nghiệm):</b> ${q.content}</p>
-                            <div class="radio-group"><input type="radio" name="q_${q.id}" value="A" class="ans-input"> <label>A. ${q.answers[0]}</label></div>
-                            <div class="radio-group"><input type="radio" name="q_${q.id}" value="B" class="ans-input"> <label>B. ${q.answers[1]}</label></div>
-                            <div class="radio-group"><input type="radio" name="q_${q.id}" value="C" class="ans-input"> <label>C. ${q.answers[2]}</label></div>
-                            <div class="radio-group"><input type="radio" name="q_${q.id}" value="D" class="ans-input"> <label>D. ${q.answers[3]}</label></div>
-                        </div>
-                    `;
+            try {
+                let resQ = await fetch(`${API_URL}/questions`);
+                questions = await resQ.json();
+                
+                if(!Array.isArray(questions) || questions.length === 0) {
+                    area.innerHTML = "<p>Đề thi hiện tại chưa có câu hỏi nào hoặc chưa được admin bấm Đồng bộ!</p>";
+                    return;
                 }
-            }).join('');
+
+                area.innerHTML = questions.map((q, i) => {
+                    if(q.type === 'tuluan') {
+                        return `
+                            <div class="list-box quiz" data-id="${q.id}" data-type="tuluan">
+                                <p><b>Câu ${i+1} (Tự luận):</b> ${q.content}</p>
+                                <textarea class="ans-input" placeholder="Gõ câu trả lời tự luận của bạn vào đây..."></textarea>
+                            </div>
+                        `;
+                    } else {
+                        return `
+                            <div class="list-box quiz" data-id="${q.id}" data-type="tracnghiem">
+                                <p><b>Câu ${i+1} (Trắc nghiệm):</b> ${q.content}</p>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="A" class="ans-input"> <label>A. ${q.answers[0]}</label></div>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="B" class="ans-input"> <label>B. ${q.answers[1]}</label></div>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="C" class="ans-input"> <label>C. ${q.answers[2]}</label></div>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="D" class="ans-input"> <label>D. ${q.answers[3]}</label></div>
+                            </div>
+                        `;
+                    }
+                }).join('');
+
+            } catch(e) {
+                area.innerHTML = "<p style='color:red;'>Lỗi tải đề thi! Kiểm tra lại cấu hình kết nối mạng hoặc link API.</p>";
+            }
         }
 
         async function submitExam() {
-            clearInterval(timer);
             const quizBlocks = document.querySelectorAll('.quiz');
             let studentAnswers = [];
 
@@ -101,18 +83,21 @@
                 });
             });
 
-            await fetch(`${API_URL}/submissions`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    studentName: localStorage.getItem('fullname'),
-                    submitAt: new Date().toLocaleString(),
-                    answers: studentAnswers
-                })
-            });
-
-            alert('Nộp bài thành công lên mạng!');
-            window.location.href = 'result.html';
+            try {
+                await fetch(`${API_URL}/submissions`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        studentName: localStorage.getItem('fullname'),
+                        submitAt: new Date().toLocaleString(),
+                        answers: studentAnswers
+                    })
+                });
+                alert('Nộp bài thành công lên mạng Beeceptor!');
+                window.location.href = 'result.html';
+            } catch(e) {
+                alert('Lỗi nộp bài, mạng có sự cố!');
+            }
         }
 
         startExam();
