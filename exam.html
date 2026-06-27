@@ -30,7 +30,7 @@
 
         if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
 
-        let questions = [];
+        let currentData = { questions: [], submissions: [] };
         let timer;
 
         async function startExam() {
@@ -49,14 +49,22 @@
                     headers: { 'X-Master-Key': MASTER_KEY }
                 });
                 let dataJson = await resQ.json();
-                questions = dataJson.record;
                 
-                if(!Array.isArray(questions) || questions.length === 0) {
+                if (dataJson.record && typeof dataJson.record === 'object' && !Array.isArray(dataJson.record)) {
+                    currentData = {
+                        questions: dataJson.record.questions || [],
+                        submissions: dataJson.record.submissions || []
+                    };
+                } else if (Array.isArray(dataJson.record)) {
+                    currentData = { questions: dataJson.record, submissions: [] };
+                }
+
+                if(!currentData.questions || currentData.questions.length === 0) {
                     area.innerHTML = "<p style='text-align:center;'>Hiện chưa có đề thi nào được tạo!</p>";
                     return;
                 }
 
-                area.innerHTML = questions.map((q, i) => {
+                area.innerHTML = currentData.questions.map((q, i) => {
                     if(q.type === 'tuluan') {
                         return `
                             <div class="list-box quiz" data-id="${q.id}" data-type="tuluan">
@@ -79,7 +87,7 @@
             } catch(e) { area.innerHTML = "<p style='color:red;'>Lỗi không thể tải đề thi từ JSONbin!</p>"; }
         }
 
-        function submitExam() {
+        async function submitExam() {
             clearInterval(timer);
             const quizBlocks = document.querySelectorAll('.quiz');
             let studentAnswers = [];
@@ -100,17 +108,35 @@
                 });
             });
 
-            // Lưu bài nộp vào bộ nhớ chung để trang Admin có thể đọc ngay lập tức
-            let currentSubmissions = JSON.parse(localStorage.getItem('global_submissions')) || [];
-            currentSubmissions.push({
+            let newSubmission = {
                 studentName: localStorage.getItem('fullname') || "Học sinh ẩn danh",
                 submitAt: new Date().toLocaleString(),
                 answers: studentAnswers
-            });
-            localStorage.setItem('global_submissions', JSON.stringify(currentSubmissions));
+            };
 
-            alert('Nộp bài thành công! Ghi nhận kết quả thi thời gian thực.');
-            window.location.href = 'result.html';
+            if(!currentData.submissions) currentData.submissions = [];
+            currentData.submissions.push(newSubmission);
+
+            try {
+                // Đẩy trực tiếp bộ dữ liệu bao gồm cả bài nộp mới lên mây JSONbin
+                let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify(currentData)
+                });
+                
+                if(res.ok) {
+                    alert('Nộp bài thành công lên Server mạng!');
+                    window.location.href = 'result.html';
+                } else {
+                    alert('Lỗi gửi bài lên Server, vui lòng thử lại!');
+                }
+            } catch(e) {
+                alert('Lỗi kết nối mạng, không thể nộp bài!');
+            }
         }
 
         startExam();
