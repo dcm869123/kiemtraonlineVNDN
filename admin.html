@@ -2,125 +2,231 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Hệ Thống Quản Trị Đề Thi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Cyber Gaming Edition</title>
     <style>
         :root { 
-            --primary: #1e3c72; 
-            --secondary: #2a5298; 
-            --success: #10b981; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --bg: #f8fafc; 
-            --text: #1e293b; 
-            --card-bg: #ffffff;
+            --bg-dark: #0b0f19;
+            --card-dark: #151d30;
+            --text-light: #f8fafc;
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff007f;
+            --neon-green: #39ff14;
+            --neon-red: #ff3131;
+            --neon-yellow: #fff01f;
         }
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-light); 
+            margin: 0; 
+            padding: 0;
+            overflow-x: hidden;
+        }
         
-        /* Navigation Bar */
-        .navbar { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .navbar h1 { margin: 0; font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .user-info { display: flex; align-items: center; gap: 15px; }
-        .btn-logout { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-        .btn-logout:hover { background: var(--danger); border-color: var(--danger); }
+        /* Hiệu ứng thanh LED RGB 7 màu chạy vô tận */
+        .rgb-bar {
+            height: 6px;
+            width: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            background-size: 400%;
+            animation: rgb-animation 8s linear infinite;
+        }
+        @keyframes rgb-animation {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
 
-        .main-layout { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+        /* Navbar Gaming */
+        .navbar { 
+            background: rgba(21, 29, 48, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 10px;
+            align-items: center; 
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+        @media (min-width: 768px) {
+            .navbar { flex-direction: row; justify-content: space-between; padding: 15px 30px; }
+        }
+        .navbar h1 { 
+            margin: 0; 
+            font-size: 18px; 
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+            text-align: center;
+        }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .btn-logout { 
+            background: transparent; 
+            color: #fff; 
+            border: 1px solid var(--neon-red); 
+            padding: 6px 14px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 0 8px rgba(255, 49, 49, 0.2);
+            transition: all 0.2s; 
+        }
+        .btn-logout:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 15px var(--neon-red); }
 
-        /* Card Decoration */
-        .card { background: var(--card-bg); padding: 25px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        /* Main Layout linh hoạt cho Mobile */
+        .main-layout { 
+            max-width: 1200px; 
+            margin: 20px auto; 
+            padding: 0 15px; 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 20px; 
+        }
+        @media (min-width: 992px) { .main-layout { grid-template-columns: 1fr 1fr; } }
+
+        /* Gaming Card */
+        .card { 
+            background: var(--card-dark); 
+            padding: 20px; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            position: relative;
+        }
         .card-full { grid-column: 1 / -1; }
-        .card h3 { margin-top: 0; color: var(--primary); font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .card h3 { 
+            margin-top: 0; 
+            color: var(--neon-pink); 
+            font-size: 16px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 0, 127, 0.2); 
+            padding-bottom: 10px; 
+            margin-bottom: 15px; 
+            text-shadow: 0 0 8px rgba(255, 0, 127, 0.3);
+        }
         
-        label { font-weight: 600; display: block; margin: 15px 0 6px; color: #475569; font-size: 14px; }
-        input[type="text"], select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; background: #fbfbfb; transition: all 0.2s; }
-        input[type="text"]:focus, select:focus, textarea:focus { border-color: var(--secondary); outline: none; background: #fff; box-shadow: 0 0 0 3px rgba(42,82,152,0.1); }
+        label { font-weight: 600; display: block; margin: 15px 0 6px; color: #94a3b8; font-size: 13px; text-transform: uppercase; }
+        input[type="text"], select, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            background: #1e293b; 
+            color: #fff;
+            transition: all 0.2s; 
+        }
+        input[type="text"]:focus, select:focus, textarea:focus { 
+            border-color: var(--neon-blue); 
+            outline: none; 
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
         textarea { height: 90px; resize: vertical; }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        @media (min-width: 480px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
         
-        /* Buttons */
-        button { font-weight: 600; cursor: pointer; border: none; transition: all 0.2s ease; }
-        button:active { transform: scale(0.98); }
-        .btn-add { background: var(--primary); color: white; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 15px; }
-        .btn-add:hover { background: var(--secondary); }
-        .btn-sync { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; width: 100%; font-size: 16px; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(217,119,6,0.2); }
-        .btn-sync:hover { filter: brightness(1.05); }
-        .btn-refresh { background: #f1f5f9; color: var(--text); padding: 8px 16px; border-radius: 6px; font-size: 13px; border: 1px solid #cbd5e1; }
-        .btn-refresh:hover { background: #e2e8f0; }
-        .btn-delete { background: #fee2e2; color: var(--danger); padding: 6px 12px; font-size: 12px; border-radius: 6px; float: right; }
-        .btn-delete:hover { background: var(--danger); color: white; }
+        /* Gaming Buttons */
+        button { font-weight: 700; cursor: pointer; border: none; transition: all 0.2s ease; text-transform: uppercase; }
+        button:active { transform: scale(0.96); }
+        .btn-add { 
+            background: var(--neon-blue); color: #000; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 15px; 
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+        }
+        .btn-add:hover { box-shadow: 0 0 20px var(--neon-blue); }
+        .btn-sync { 
+            background: linear-gradient(135deg, var(--neon-pink), #b0005d); color: white; width: 100%; font-size: 15px; padding: 14px; border-radius: 8px; 
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+        }
+        .btn-sync:hover { box-shadow: 0 0 25px var(--neon-pink); }
+        .btn-refresh { 
+            background: #1e293b; color: var(--neon-green); padding: 8px 14px; border-radius: 6px; font-size: 12px; border: 1px solid var(--neon-green); 
+            box-shadow: 0 0 8px rgba(57, 255, 20, 0.2);
+        }
+        .btn-refresh:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
+        .btn-delete { background: rgba(255,49,49,0.1); color: var(--neon-red); padding: 6px 12px; font-size: 12px; border-radius: 6px; float: right; border: 1px solid var(--neon-red); }
+        .btn-delete:hover { background: var(--neon-red); color: #000; }
 
-        /* Item Lists */
-        .list-container { max-height: 400px; overflow-y: auto; padding-right: 5px; }
-        .quiz-item { background: #f8fafc; border-left: 4px solid var(--secondary); padding: 15px; margin-bottom: 12px; border-radius: 0 8px 8px 0; border: 1px solid #e2e8f0; border-left-width: 4px; }
-        .sub-item { border-left-color: var(--success); background: #f0fdf4; border-color: #d1fae5; }
-        .sub-item.cheat-detected { border-left-color: var(--danger); background: #fef2f2; border-color: #fee2e2; }
+        /* Lists */
+        .list-container { max-height: 350px; overflow-y: auto; padding-right: 5px; }
+        .quiz-item { 
+            background: #1e293b; border-left: 4px solid var(--neon-blue); padding: 14px; margin-bottom: 12px; border-radius: 0 8px 8px 0; 
+            border-top: 1px solid rgba(255,255,255,0.02); border-right: 1px solid rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.02);
+        }
+        .sub-item { border-left-color: var(--neon-green); background: #162e24; }
+        .sub-item.cheat-detected { border-left-color: var(--neon-red); background: #2e1616; }
         
-        .badge { display: inline-block; padding: 3px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; margin-left: 5px; text-transform: uppercase; }
-        .badge-success { background: #d1fae5; color: #065f46; }
-        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge { display: inline-block; padding: 3px 6px; font-size: 10px; font-weight: bold; border-radius: 4px; margin-left: 5px; }
+        .badge-success { background: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
+        .badge-danger { background: rgba(255, 49, 49, 0.2); color: var(--neon-red); }
         
-        small { color: #64748b; font-size: 13px; display: block; margin-top: 6px; }
+        small { color: #94a3b8; font-size: 12px; display: block; margin-top: 6px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
+    <div class="rgb-bar"></div>
     <div class="navbar">
-        <h1>⚙️ HỆ THỐNG QUẢN TRỊ ĐỀ THI (K12-JSONBIN)</h1>
+        <h1>🎮 CENTRAL CONTROL COMMAND (K12-JSONBIN)</h1>
         <div class="user-info">
-            <span>Chào, <b id="adminName" style="color: #60a5fa">Admin</b></span>
-            <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+            <span style="font-size:14px;">Operator: <b id="adminName" style="color: var(--neon-green)">Admin</b></span>
+            <button class="btn-logout" onclick="logout()">Xóa Cache</button>
         </div>
     </div>
 
     <div class="main-layout">
-        <!-- CỘT 1: THÊM CÂU HỎI -->
+        <!-- TẠO ĐỀ -->
         <div class="card">
-            <h3>📝 Tạo Câu Hỏi Đề Thi</h3>
-            <label>Hình thức câu hỏi:</label>
+            <h3>⚡ KHỞI TẠO MODULE CÂU HỎI</h3>
+            <label>Phân loại Matrix:</label>
             <select id="quizType" onchange="toggleAnswersForm()">
-                <option value="tuluan">Câu hỏi Tự Luận</option>
-                <option value="tracnghiem">Câu hỏi Trắc Nghiệm (4 đáp án)</option>
+                <option value="tuluan">Tự Luận (Essay Mode)</option>
+                <option value="tracnghiem">Trắc Nghiệm (4-Choice Target)</option>
             </select>
             
-            <label>Nội dung câu hỏi / Đề bài:</label>
-            <textarea id="quizContent" placeholder="Nhập nội dung đề bài thi vào đây..."></textarea>
+            <label>Nội dung câu hỏi / Core Content:</label>
+            <textarea id="quizContent" placeholder="Nhập mã nguồn hoặc câu hỏi thi tại đây..."></textarea>
             
             <div id="tracNghiemForm" style="display: none;">
-                <label>Các phương án lựa chọn:</label>
+                <label>Các Node phương án cấu trúc:</label>
                 <div class="grid-2">
-                    <input type="text" id="ansA" placeholder="Đáp án A">
-                    <input type="text" id="ansB" placeholder="Đáp án B">
-                    <input type="text" id="ansC" placeholder="Đáp án C">
-                    <input type="text" id="ansD" placeholder="Đáp án D">
+                    <input type="text" id="ansA" placeholder="Data Node A">
+                    <input type="text" id="ansB" placeholder="Data Node B">
+                    <input type="text" id="ansC" placeholder="Data Node C">
+                    <input type="text" id="ansD" placeholder="Data Node D">
                 </div>
-                <label>Đáp án chính xác:</label>
+                <label>Key đáp án chính xác:</label>
                 <select id="correctAnswer">
-                    <option value="A">Phương án A</option>
-                    <option value="B">Phương án B</option>
-                    <option value="C">Phương án C</option>
-                    <option value="D">Phương án D</option>
+                    <option value="A">Node A</option>
+                    <option value="B">Node B</option>
+                    <option value="C">Node C</option>
+                    <option value="D">Node D</option>
                 </select>
             </div>
-            <button class="btn-add" onclick="saveQuestion()">+ THÊM VÀO ĐỀ THI LƯU TẠM</button>
+            <button class="btn-add" onclick="saveQuestion()">+ THÊM VÀO BUFFER TẠM THỜI</button>
         </div>
 
-        <!-- CỘT 2: CẤU TRÚC ĐỀ THI ĐANG TẠO -->
+        <!-- LIST ĐỀ -->
         <div class="card">
-            <h3>📚 Cấu Trúc Đề Thi Cục Bộ</h3>
-            <div class="list-container" id="listQuestions">Đang tải cấu trúc câu hỏi...</div>
+            <h3>🛸 BUFFER ĐỀ THI CỤC BỘ</h3>
+            <div class="list-container" id="listQuestions">Đang quét phân vùng dữ liệu...</div>
             <div style="margin-top: 20px;">
-                <button class="btn-sync" onclick="syncToJSONbin()">⚡ ĐỒNG BỘ ĐỀ LÊN MẠNG (PUBLISH)</button>
+                <button class="btn-sync" onclick="syncToJSONbin()">⚡ ĐỒNG BỘ LÊN MẠNG CLOUD SERVER</button>
             </div>
         </div>
 
-        <!-- HÀNG TOÀN CHIỀU RỘNG: THỐNG KÊ BÀI NỘP CỦA HỌC SINH -->
+        <!-- BÀI NỘP HỌC SINH -->
         <div class="card card-full">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
-                <h3 style="margin:0; border:none; padding:0;">📥 Kết Quả Bài Làm Của Thí Sinh Gửi Về</h3>
-                <button class="btn-refresh" onclick="fetchCurrentData()">🔄 Làm mới danh sách</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; flex-wrap: wrap; gap:10px;">
+                <h3 style="margin:0; border:none; padding:0; color:var(--neon-green)">📥 NHẬT KÝ THÍ SINH NỘP BÀI (LOGS)</h3>
+                <button class="btn-refresh" onclick="fetchCurrentData()">🔄 TẢI LẠI TRẠM DỮ LIỆU</button>
             </div>
-            <div class="list-container" id="adminSubmissionArea" style="max-height: 500px;">Đang quét cổng mạng kết nối...</div>
+            <div class="list-container" id="adminSubmissionArea" style="max-height: 450px;">Đang dò tìm kết nối mạng...</div>
         </div>
     </div>
 
@@ -128,11 +234,10 @@
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
         const BIN_ID = "6a3f9132da38895dfe06a006"; 
 
-        // Tự động cấp quyền admin để tránh lỗi trắng trang khi mất localStorage
         if (localStorage.getItem('role') !== 'admin') {
             localStorage.setItem('role', 'admin');
         }
-        document.getElementById('adminName').innerText = localStorage.getItem('fullname') || "Lâm (Admin)";
+        document.getElementById('adminName').innerText = localStorage.getItem('fullname') || "Lâm Studio";
 
         let serverData = { questions: [], submissions: [] };
 
@@ -161,22 +266,21 @@
         function saveQuestion() {
             const type = document.getElementById('quizType').value;
             const content = document.getElementById('quizContent').value;
-            if(!content) return alert('Vui lòng nhập nội dung đề bài!');
+            if(!content) return alert('Nhập nội dung đề bài!');
 
             let data = { id: Date.now().toString(), type, content };
             if(type === 'tracnghiem') {
                 data.answers = [
-                    document.getElementById('ansA').value || "Đáp án A",
-                    document.getElementById('ansB').value || "Đáp án B",
-                    document.getElementById('ansC').value || "Đáp án C",
-                    document.getElementById('ansD').value || "Đáp án D"
+                    document.getElementById('ansA').value || "Mục A",
+                    document.getElementById('ansB').value || "Mục B",
+                    document.getElementById('ansC').value || "Mục C",
+                    document.getElementById('ansD').value || "Mục D"
                 ];
                 data.correct = document.getElementById('correctAnswer').value;
             }
 
             serverData.questions.push(data);
             localStorage.setItem('db_questions', JSON.stringify(serverData.questions));
-            alert('Đã lưu vào danh sách đề tạm!');
             renderLocalQuestions();
             document.getElementById('quizContent').value = "";
         }
@@ -184,14 +288,14 @@
         function renderLocalQuestions() {
             const container = document.getElementById('listQuestions');
             if(!serverData.questions || serverData.questions.length === 0) {
-                container.innerHTML = "<p style='color:#94a3b8; font-style:italic; text-align:center;'>Đề thi trống. Hãy tạo câu hỏi.</p>";
+                container.innerHTML = "<p style='color:#64748b; font-style:italic; text-align:center;'>Buffer trống.</p>";
                 return;
             }
             container.innerHTML = serverData.questions.map((q, i) => `
                 <div class="quiz-item">
                     <button class="btn-delete" onclick="deleteQuestion(${i})">Xóa</button>
-                    <b>Câu ${i+1} [${q.type === 'tuluan' ? 'Tự luận' : 'Trắc nghiệm'}]:</b> ${q.content}
-                    ${q.type === 'tracnghiem' ? `<small>A: ${q.answers[0]} | B: ${q.answers[1]} | C: ${q.answers[2]} | D: ${q.answers[3]} <br><span style="color:var(--success)">Key đúng: ${q.correct}</span></small>` : ''}
+                    <b>Slot ${i+1} [${q.type === 'tuluan' ? 'TL' : 'TN'}]:</b> ${q.content}
+                    ${q.type === 'tracnghiem' ? `<small>A: ${q.answers[0]} | B: ${q.answers[1]} <br>C: ${q.answers[2]} | D: ${q.answers[3]} <br><span style="color:var(--neon-green)">Target Key: ${q.correct}</span></small>` : ''}
                 </div>
             `).join('');
         }
@@ -209,30 +313,30 @@
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                     body: JSON.stringify(serverData)
                 });
-                if(res.ok) alert('🚀 Đã xuất bản và đồng bộ đề thi lên Cloud Server JSONbin thành công!');
-                else alert('Đồng bộ lỗi!');
-            } catch(e) { alert('Lỗi đường truyền mạng!'); }
+                if(res.ok) alert('🚀 ĐỒNG BỘ CLOUD SỬA ĐỔI HOÀN TẤT!');
+                else alert('Đồng bộ thất bại!');
+            } catch(e) { alert('Lỗi hệ thống mạng!'); }
         }
 
         function renderSubmissions() {
             const container = document.getElementById('adminSubmissionArea');
             if(!serverData.submissions || serverData.submissions.length === 0) {
-                container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Chưa có bài nộp nào được ghi nhận từ máy chủ.</p>";
+                container.innerHTML = "<p style='color:#64748b; text-align:center;'>Chưa nhận được Logs bài làm nào.</p>";
                 return;
             }
             container.innerHTML = serverData.submissions.map(s => {
                 const isCheat = s.status && s.status.includes('Hủy');
                 return `
                     <div class="quiz-item sub-item ${isCheat ? 'cheat-detected' : ''}">
-                        <b>Học sinh: <span style="color:var(--primary); font-size:16px;">${s.studentName}</span></b>
+                        <b>User: <span style="color:var(--neon-blue)">${s.studentName}</span></b>
                         <span class="badge ${isCheat ? 'badge-danger' : 'badge-success'}">${s.status}</span>
-                        <small style="margin-bottom:10px;">Thời gian ghi nhận: ${s.submitAt}</small>
-                        <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <small>Time Log: ${s.submitAt}</small>
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             ${s.answers ? s.answers.map((ans, idx) => `
                                 <div style="margin-bottom: 4px; font-size:13px;">
-                                    <b>Câu ${idx+1}:</b> <span style="color:#2563eb">${ans.answer}</span>
+                                    <b>Slot ${idx+1}:</b> <span style="color:var(--neon-yellow)">${ans.answer}</span>
                                 </div>
-                            `).join('') : 'Không có dữ liệu câu trả lời'}
+                            `).join('') : 'Trống'}
                         </div>
                     </div>
                 `;
