@@ -2,37 +2,63 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Phòng Thi</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Phòng Làm Bài Thi</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { text-align: center; color: #d35400; margin-top: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .timer-box { text-align: center; font-size: 24px; color: #c0392b; font-weight: bold; margin-bottom: 20px; background: #fdf2e9; padding: 15px; border-radius: 8px; border: 1px dashed #e59866; }
+        .list-box { background: #fff; border: 1px solid #e0e0e0; border-left: 5px solid #d35400; padding: 20px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .radio-group { margin: 10px 0; padding: 8px 12px; background: #fcfcfc; border-radius: 6px; border: 1px solid #f0f0f0; transition: background 0.2s; }
+        .radio-group:hover { background: #f5f5f5; }
+        .radio-group input { margin-right: 10px; transform: scale(1.1); cursor: pointer; }
+        .radio-group label { cursor: pointer; display: inline-block; width: 90%; }
+        textarea.ans-input { width: 100%; height: 120px; border: 1px solid #ccc; border-radius: 6px; padding: 12px; box-sizing: border-box; font-family: inherit; }
+        .btn-success { background: linear-gradient(135deg, #d35400, #e67e22); color: white; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 4px 10px rgba(211,84,0,0.3); transition: all 0.3s; }
+        .btn-success:hover { transform: translateY(-2px); opacity: 0.95; }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h2>PHÒNG THI ONLINE</h2>
-        <div style="text-align: center; font-size: 20px; color: red; font-weight: bold; margin-bottom: 20px;">
-            Thời gian làm bài mặc định: 15 phút
+        <h2>🔥 PHÒNG THI TRỰC TUYẾN THỜI GIAN THỰC 🔥</h2>
+        <div class="timer-box">
+            ⏳ Thời gian còn lại: <span id="countdown">15:00</span>
         </div>
-        <hr>
-        <div id="examArea">Đang tải đề thi từ hệ thống Beeceptor...</div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+        <div id="examArea">Đang tải đề thi bảo mật từ hệ thống Beeceptor...</div>
         <br>
-        <button class="btn-success" onclick="submitExam()">NỘP BÀI THI THỜI GIAN THỰC</button>
+        <button class="btn-success" onclick="submitExam()">🎯 NỘP BÀI THI NGAY TỨC THÌ</button>
     </div>
 
     <script>
-        // THAY LINK BEECEPTOR CỦA BẠN VÀO ĐÂY ĐỒNG BỘ VỚI ADMIN
-        const API_URL = "https://k12-cua-lam.free.beeceptor.com"; 
+        const API_URL = "https://k12-cua-lam.free.beeceptor.com"; // THAY LINK CỦA BẠN VÀO ĐÂY
 
         if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
 
         let questions = [];
+        let timer;
 
         async function startExam() {
+            let timeLeft = 15 * 60; // 15 phút
+            timer = setInterval(() => {
+                let min = Math.floor(timeLeft / 60);
+                let sec = timeLeft % 60;
+                document.getElementById('countdown').innerText = `${min < 10 ? '0'+min : min}:${sec < 10 ? '0'+sec : sec}`;
+                if(timeLeft <= 0) {
+                    clearInterval(timer);
+                    alert('Hết giờ làm bài! Hệ thống tự động khóa và nộp bài.');
+                    submitExam();
+                }
+                timeLeft--;
+            }, 1000);
+
             const area = document.getElementById('examArea');
             try {
                 let resQ = await fetch(`${API_URL}/questions`);
                 questions = await resQ.json();
                 
                 if(!Array.isArray(questions) || questions.length === 0) {
-                    area.innerHTML = "<p>Đề thi hiện tại chưa có câu hỏi nào hoặc chưa được admin bấm Đồng bộ!</p>";
+                    area.innerHTML = "<p style='text-align:center; color:#7f8c8d;'>Hiện tại chưa có câu hỏi nào được đồng bộ từ Admin!</p>";
                     return;
                 }
 
@@ -40,29 +66,30 @@
                     if(q.type === 'tuluan') {
                         return `
                             <div class="list-box quiz" data-id="${q.id}" data-type="tuluan">
-                                <p><b>Câu ${i+1} (Tự luận):</b> ${q.content}</p>
-                                <textarea class="ans-input" placeholder="Gõ câu trả lời tự luận của bạn vào đây..."></textarea>
+                                <p style="font-size:16px; font-weight:bold; margin-top:0;">Câu ${i+1} (Tự luận): ${q.content}</p>
+                                <textarea class="ans-input" placeholder="Gõ câu trả lời tự luận chi tiết của bạn vào đây..."></textarea>
                             </div>
                         `;
                     } else {
                         return `
                             <div class="list-box quiz" data-id="${q.id}" data-type="tracnghiem">
-                                <p><b>Câu ${i+1} (Trắc nghiệm):</b> ${q.content}</p>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="A" class="ans-input"> <label>A. ${q.answers[0]}</label></div>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="B" class="ans-input"> <label>B. ${q.answers[1]}</label></div>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="C" class="ans-input"> <label>C. ${q.answers[2]}</label></div>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="D" class="ans-input"> <label>D. ${q.answers[3]}</label></div>
+                                <p style="font-size:16px; font-weight:bold; margin-top:0;">Câu ${i+1} (Trắc nghiệm): ${q.content}</p>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="A" id="q_${q.id}_A" class="ans-input"> <label for="q_${q.id}_A"><b>A.</b> ${q.answers[0]}</label></div>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="B" id="q_${q.id}_B" class="ans-input"> <label option for="q_${q.id}_B"><b>B.</b> ${q.answers[1]}</label></div>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="C" id="q_${q.id}_C" class="ans-input"> <label for="q_${q.id}_C"><b>C.</b> ${q.answers[2]}</label></div>
+                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="D" id="q_${q.id}_D" class="ans-input"> <label for="q_${q.id}_D"><b>D.</b> ${q.answers[3]}</label></div>
                             </div>
                         `;
                     }
                 }).join('');
 
             } catch(e) {
-                area.innerHTML = "<p style='color:red;'>Lỗi tải đề thi! Kiểm tra lại cấu hình kết nối mạng hoặc link API.</p>";
+                area.innerHTML = "<p style='color:red; text-align:center;'>Lỗi máy chủ! Không thể tải cấu trúc đề thi.</p>";
             }
         }
 
         async function submitExam() {
+            clearInterval(timer);
             const quizBlocks = document.querySelectorAll('.quiz');
             let studentAnswers = [];
 
@@ -79,7 +106,7 @@
 
                 studentAnswers.push({
                     questionId: block.getAttribute('data-id'),
-                    answer: answerValue || "Không trả lời"
+                    answer: answerValue || "Bỏ trống / Không làm"
                 });
             });
 
@@ -93,11 +120,9 @@
                         answers: studentAnswers
                     })
                 });
-                alert('Nộp bài thành công lên mạng Beeceptor!');
+                alert('Nộp bài thành công lên hệ thống mạng Beeceptor!');
                 window.location.href = 'result.html';
-            } catch(e) {
-                alert('Lỗi nộp bài, mạng có sự cố!');
-            }
+            } catch(e) { alert('Mạng có sự cố, không thể gửi file nộp bài!'); }
         }
 
         startExam();
