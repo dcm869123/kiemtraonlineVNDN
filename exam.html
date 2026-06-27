@@ -2,57 +2,80 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Phòng Làm Bài Thi</title>
+    <title>Phòng Làm Bài Thi Trực Tuyến</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h2 { text-align: center; color: #d35400; margin-top: 0; text-transform: uppercase; }
-        .timer-box { text-align: center; font-size: 24px; color: #c0392b; font-weight: bold; margin-bottom: 20px; background: #fdf2e9; padding: 15px; border-radius: 8px; border: 1px dashed #e59866; }
-        .cheat-warning-box { text-align: center; background: #fdf2f2; color: #ec5c5c; padding: 10px; border-radius: 8px; border: 1px solid #f5b7b7; margin-bottom: 15px; font-weight: bold; display: none; }
-        .list-box { background: #fff; border: 1px solid #e0e0e0; border-left: 5px solid #d35400; padding: 20px; margin-bottom: 15px; border-radius: 6px; }
-        .radio-group { margin: 10px 0; padding: 8px 12px; background: #fcfcfc; border-radius: 6px; border: 1px solid #f0f0f0; }
-        .radio-group input { margin-right: 10px; transform: scale(1.1); }
-        textarea.ans-input { width: 100%; height: 120px; border: 1px solid #ccc; border-radius: 6px; padding: 12px; box-sizing: border-box; }
-        .btn-success { background: linear-gradient(135deg, #d35400, #e67e22); color: white; border: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 20px; box-shadow: 0 4px 10px rgba(211,84,0,0.3); }
+        :root { 
+            --primary: #d35400; 
+            --secondary: #e67e22; 
+            --bg: #f1f5f9; 
+            --text: #334155; 
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        h2 { text-align: center; color: #1e293b; margin-top: 0; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
+        
+        /* Giao diện đồng hồ đếm ngược */
+        .timer-box { text-align: center; font-size: 22px; color: #b91c1c; font-weight: 700; margin-bottom: 25px; background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fee2e2; box-shadow: inset 0 2px 4px rgba(185,28,28,0.02); }
+        
+        /* Giao diện cảnh báo lỗi thoát tab siêu căng */
+        .cheat-warning-box { text-align: center; background: #fff1f2; color: #e11d48; padding: 12px; border-radius: 10px; border: 2px solid #fecdd3; margin-bottom: 20px; font-weight: bold; animation: shake 0.4s ease-in-out; display: none; box-shadow: 0 4px 6px rgba(225,29,72,0.05); }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+
+        /* Block câu hỏi phòng thi */
+        .list-box { background: #ffffff; border: 1px solid #e2e8f0; border-left: 6px solid var(--primary); padding: 22px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.01); }
+        .list-box p { margin-top: 0; font-size: 16px; font-weight: 600; color: #1e293b; line-height: 1.5; }
+        
+        .radio-group { margin: 10px 0; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; }
+        .radio-group:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .radio-group input { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+        
+        textarea.ans-input { width: 100%; height: 130px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; box-sizing: border-box; font-size: 14px; font-family: inherit; background: #fbfbfb; }
+        textarea.ans-input:focus { outline: none; border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 3px rgba(230,126,34,0.1); }
+        
+        .btn-success { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; padding: 16px; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 25px; box-shadow: 0 4px 12px rgba(211,84,0,0.25); transition: all 0.2s; }
+        .btn-success:hover { filter: brightness(1.05); box-shadow: 0 6px 15px rgba(211,84,0,0.35); }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🔥 PHÒNG THI ONLINE XIN CHÀO 🔥</h2>
-        <div class="timer-box">⏳ Thời gian còn lại: <span id="countdown">15:00</span></div>
+        <h2>🔥 HỆ THỐNG PHÒNG THI KIỂM TRA TRỰC TUYẾN 🔥</h2>
+        <div class="timer-box">⏳ Thời gian làm bài còn lại: <span id="countdown">15:00</span></div>
         
-        <div id="cheatWarning" class="cheat-warning-box">⚠️ CẢNH BÁO GIAN LẬN: Bạn đã rời tab <span id="cheatCount">0</span>/3 lần! Vi phạm quá 3 lần hệ thống sẽ tự động nộp bài.</div>
+        <div id="cheatWarning" class="cheat-warning-box">🛑 CẢNH BÁO PHÁT HIỆN GIAN LẬN: Bạn đã rời màn hình thi <span id="cheatCount">0</span>/3 lần! Nếu vi phạm lần thứ 3 hệ thống sẽ tự động nộp bài lập tức.</div>
 
-        <div id="examArea">Đang nạp đề thi bảo mật từ JSONbin...</div>
+        <div id="examArea">Đang đồng bộ và giải mã mã đề bảo mật từ JSONbin...</div>
         <br>
-        <button class="btn-success" onclick="submitExam(false)">🎯 NỘP BÀI THI</button>
+        <button class="btn-success" onclick="submitExam(false)">🎯 HOÀN THÀNH & NỘP BÀI THI</button>
     </div>
 
     <script>
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
-        const BIN_ID = "6a3f9132da38895dfe06xa006"; // Đã cập nhật Bin ID mới của bro
+        const BIN_ID = "6a3f9132da38895dfe06a006"; // Đã loại bỏ chữ 'x' sai sót
 
-        const currentRole = localStorage.getItem('role');
-        if (!currentRole || currentRole !== 'student') {
-            window.location.href = 'index.html';
-        }
+        if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
 
         let currentData = { questions: [], submissions: [] };
         let timer;
         let cheatAttempts = 0; 
         let isSubmitted = false; 
 
+        // --- HÀM KIỂM TRA CHỐNG THOÁT TAB / MỞ TAB AI ---
         function handleCheatDetect() {
             if (isSubmitted) return; 
+
             cheatAttempts++;
-            document.getElementById('cheatWarning').style.display = "block";
-            document.getElementById('cheatCount').innerText = cheatAttempts;
+            const warningBox = document.getElementById('cheatWarning');
+            const countSpan = document.getElementById('cheatCount');
+            
+            warningBox.style.display = "block";
+            countSpan.innerText = cheatAttempts;
 
             if (cheatAttempts >= 3) {
-                alert('🔴 BẠN ĐÃ VI PHẠM QUY CHẾ THI QUÁ 3 LẦN. Hệ thống tự động thu bài!');
+                alert('🔴 PHẠT QUY CHẾ: Bạn vi phạm quy chế rời phòng thi quá 3 lần để tra cứu/dùng AI. Hệ thống tiến hành cưỡng chế thu bài!');
                 submitExam(true); 
             } else {
-                alert(`⚠️ CẢNH BÁO GIAN LẬN!\nBạn vừa rời khỏi màn hình bài thi (Lần ${cheatAttempts}/3).\nKhông thoát tab sử dụng AI!`);
+                alert(`⚠️ CẢNH BÁO TRƯỜNG THI!\nBạn vừa rời tab bài làm (Lần vi phạm: ${cheatAttempts}/3).\nMọi hành vi sử dụng AI giải đề sẽ bị ghi nhận trạng thái hủy bài!`);
             }
         }
 
@@ -63,6 +86,7 @@
             handleCheatDetect();
         });
 
+        // --- ĐỔ CÂU HỎI TỪ CLOUD ---
         async function startExam() {
             let timeLeft = 15 * 60;
             timer = setInterval(() => {
@@ -86,7 +110,7 @@
                 }
 
                 if(!currentData.questions || currentData.questions.length === 0) {
-                    area.innerHTML = "<p style='text-align:center;'>Hiện chưa có đề thi nào được tạo!</p>";
+                    area.innerHTML = "<p style='text-align:center; color:#64748b; font-style:italic;'>Admin hiện tại đang khóa đề, chưa mở câu hỏi thi!</p>";
                     return;
                 }
 
@@ -94,25 +118,26 @@
                     if(q.type === 'tuluan') {
                         return `
                             <div class="list-box quiz" data-id="${q.id}" data-type="tuluan">
-                                <p><b>Câu ${i+1} (Tự luận):</b> ${q.content}</p>
-                                <textarea class="ans-input" placeholder="Gõ câu trả lời..."></textarea>
+                                <p>Câu ${i+1} (Tự luận): ${q.content}</p>
+                                <textarea class="ans-input" placeholder="Nhập phần trả lời tự luận của thí sinh..."></textarea>
                             </div>
                         `;
                     } else {
                         return `
                             <div class="list-box quiz" data-id="${q.id}" data-type="tracnghiem">
-                                <p><b>Câu ${i+1} (Trắc nghiệm):</b> ${q.content}</p>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="A"> A. ${q.answers[0]}</div>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="B"> B. ${q.answers[1]}</div>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="C"> C. ${q.answers[2]}</div>
-                                <div class="radio-group"><input type="radio" name="q_${q.id}" value="D"> D. ${q.answers[3]}</div>
+                                <p>Câu ${i+1} (Trắc nghiệm): ${q.content}</p>
+                                <div class="radio-group" onclick="this.querySelector('input').click()"><input type="radio" name="q_${q.id}" value="A"> A. ${q.answers[0]}</div>
+                                <div class="radio-group" onclick="this.querySelector('input').click()"><input type="radio" name="q_${q.id}" value="B"> B. ${q.answers[1]}</div>
+                                <div class="radio-group" onclick="this.querySelector('input').click()"><input type="radio" name="q_${q.id}" value="C"> C. ${q.answers[2]}</div>
+                                <div class="radio-group" onclick="this.querySelector('input').click()"><input type="radio" name="q_${q.id}" value="D"> D. ${q.answers[3]}</div>
                             </div>
                         `;
                     }
                 }).join('');
-            } catch(e) { area.innerHTML = "<p style='color:red;'>Lỗi không tải được đề thi từ JSONbin!</p>"; }
+            } catch(e) { area.innerHTML = "<p style='color:red; text-align:center;'>❌ Lỗi nghiêm trọng: Không thể giải mã đề thi từ Cloud Server!</p>"; }
         }
 
+        // --- GỬI DỮ LIỆU LÊN SERVER ---
         async function submitExam(isForced = false) {
             if (isSubmitted) return;
             isSubmitted = true;
@@ -130,14 +155,14 @@
                     const checked = block.querySelector('input:checked');
                     if(checked) answerValue = checked.value;
                 }
-                studentAnswers.push({ answer: answerValue || (isForced ? "Bị khóa do gian lận" : "Bỏ trống") });
+                studentAnswers.push({ answer: answerValue || (isForced ? "Bị thu bài do gian lận" : "Bỏ trống") });
             });
 
             let newSubmission = {
                 studentName: localStorage.getItem('fullname') || "Học sinh ẩn danh",
                 submitAt: new Date().toLocaleString(),
                 answers: studentAnswers,
-                status: isForced ? `Hủy bài (Gian lận thoát tab ${cheatAttempts} lần)` : "Nộp bài hợp lệ"
+                status: isForced ? `Hủy bài (Gian lận rời tab ${cheatAttempts} lần)` : "Nộp bài hợp lệ"
             };
 
             if(!currentData.submissions) currentData.submissions = [];
@@ -146,19 +171,16 @@
             try {
                 let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                     body: JSON.stringify(currentData)
                 });
                 if(res.ok) {
-                    alert(isForced ? 'Bài thi đã bị khóa và nộp với trạng thái GIAN LẬN!' : 'Nộp bài thành công!');
+                    alert(isForced ? 'Bài thi đã bị khóa nộp tự động với trạng thái VI PHẠM!' : 'Hệ thống đã thu và tải bài làm của bạn lên Máy chủ thành công!');
                     window.location.href = 'result.html';
                 } else {
-                    alert('Lỗi gửi bài lên Server!');
+                    alert('Lỗi phản hồi mạng khi nộp bài!');
                 }
-            } catch(e) { alert('Lỗi kết nối mạng!'); }
+            } catch(e) { alert('Mất kết nối Internet, không thể đồng bộ bài làm!'); }
         }
 
         startExam();
