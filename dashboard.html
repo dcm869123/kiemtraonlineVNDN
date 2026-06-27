@@ -15,33 +15,19 @@
         <h3>Đề thi có sẵn trên hệ thống:</h3>
         <div class="list-box">
             <h4>Đề thi Tổng hợp Trắc nghiệm & Tự luận</h4>
-            <p>Thời gian: <span id="txtDuration">...</span> phút | Trạng thái: <b id="txtStatus">...</b></p>
+            <p>Thời gian làm bài: 15 phút | Trạng thái: <b>ĐANG MỞ</b></p>
             <button class="btn-success" id="btnVaoThi" onclick="window.location.href='exam.html'">VÀO THI NGAY</button>
         </div>
     </div>
 
     <script>
-        // DÁN ĐOẠN LINK MOCKAPI CỦA BẠN VÀO ĐÂY
-        const API_URL = "https://6a3e27c20443193a1a0b847a.mockapi.io/questions"; 
+        // THAY LINK BEECEPTOR CỦA BẠN VÀO ĐÂY ĐỒNG BỘ VỚI 2 FILE KIA
+        const API_URL = "https://k12-cua-lam.free.beeceptor.com"; 
 
         if (localStorage.getItem('role') !== 'student') window.location.href = 'index.html';
         document.getElementById('studentName').innerText = localStorage.getItem('fullname');
 
-        async function checkExam() {
-            let res = await fetch(`${API_URL}/questions`);
-            let list = await res.json();
-            let exam = list.find(item => item.type === 'config') || {duration: "15", status: "mở"};
-            
-            document.getElementById('txtDuration').innerText = exam.duration;
-            document.getElementById('txtStatus').innerText = exam.status.toUpperCase();
-            if(exam.status === 'đóng') {
-                document.getElementById('btnVaoThi').disabled = true;
-                document.getElementById('btnVaoThi').innerText = "ĐỀ THI ĐANG KHÓA";
-                document.getElementById('btnVaoThi').style.backgroundColor = "gray";
-            }
-        }
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-        checkExam();
     </script>
 </body>
 </html>
