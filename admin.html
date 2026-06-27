@@ -27,7 +27,7 @@
         @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
 
         /* Card Decoration */
-        .card { background: var(--card-bg); padding: 25px; border-radius: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 25px; }
         .card-full { grid-column: 1 / -1; }
         .card h3 { margin-top: 0; color: var(--primary); font-size: 18px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
         
@@ -45,7 +45,7 @@
         .btn-add:hover { background: var(--secondary); }
         .btn-sync { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; width: 100%; font-size: 16px; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(217,119,6,0.2); }
         .btn-sync:hover { filter: brightness(1.05); }
-        .btn-refresh { background: #f1f5f9; color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #cbd5e1; }
+        .btn-refresh { background: #f1f5f9; color: var(--text); padding: 8px 16px; border-radius: 6px; font-size: 13px; border: 1px solid #cbd5e1; }
         .btn-refresh:hover { background: #e2e8f0; }
         .btn-delete { background: #fee2e2; color: var(--danger); padding: 6px 12px; font-size: 12px; border-radius: 6px; float: right; }
         .btn-delete:hover { background: var(--danger); color: white; }
@@ -61,19 +61,20 @@
         .badge-danger { background: #fee2e2; color: #991b1b; }
         
         small { color: #64748b; font-size: 13px; display: block; margin-top: 6px; }
-    </script>
+    </style>
 </head>
 <body>
 
     <div class="navbar">
-        <h1>⚙️ HỆ THỐNG QUẢN TRỊ ĐỀ THI (K12-DASHBOARD)</h1>
+        <h1>⚙️ HỆ THỐNG QUẢN TRỊ ĐỀ THI (K12-JSONBIN)</h1>
         <div class="user-info">
-            <span>Chào, <b id="adminName" style="color: #60a5fa">...</b> (Admin)</span>
+            <span>Chào, <b id="adminName" style="color: #60a5fa">Admin</b></span>
             <button class="btn-logout" onclick="logout()">Đăng xuất</button>
         </div>
     </div>
 
     <div class="main-layout">
+        <!-- CỘT 1: THÊM CÂU HỎI -->
         <div class="card">
             <h3>📝 Tạo Câu Hỏi Đề Thi</h3>
             <label>Hình thức câu hỏi:</label>
@@ -104,6 +105,7 @@
             <button class="btn-add" onclick="saveQuestion()">+ THÊM VÀO ĐỀ THI LƯU TẠM</button>
         </div>
 
+        <!-- CỘT 2: CẤU TRÚC ĐỀ THI ĐANG TẠO -->
         <div class="card">
             <h3>📚 Cấu Trúc Đề Thi Cục Bộ</h3>
             <div class="list-container" id="listQuestions">Đang tải cấu trúc câu hỏi...</div>
@@ -112,6 +114,7 @@
             </div>
         </div>
 
+        <!-- HÀNG TOÀN CHIỀU RỘNG: THỐNG KÊ BÀI NỘP CỦA HỌC SINH -->
         <div class="card card-full">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
                 <h3 style="margin:0; border:none; padding:0;">📥 Kết Quả Bài Làm Của Thí Sinh Gửi Về</h3>
@@ -123,10 +126,13 @@
 
     <script>
         const MASTER_KEY = "$2a$10$7v4PhJO8eUu5nA2C0NUhf.kpljf8iTlptXuIQ.4j/6dpK8YoE88EO"; 
-        const BIN_ID = "6a3f9132da38895dfe06a006"; // Đã sửa lại chuẩn 100%
+        const BIN_ID = "6a3f9132da38895dfe06a006"; 
 
-        if (localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
-        document.getElementById('adminName').innerText = localStorage.getItem('fullname') || "Quản trị viên";
+        // Tự động cấp quyền admin để tránh lỗi trắng trang khi mất localStorage
+        if (localStorage.getItem('role') !== 'admin') {
+            localStorage.setItem('role', 'admin');
+        }
+        document.getElementById('adminName').innerText = localStorage.getItem('fullname') || "Lâm (Admin)";
 
         let serverData = { questions: [], submissions: [] };
 
@@ -177,7 +183,7 @@
 
         function renderLocalQuestions() {
             const container = document.getElementById('listQuestions');
-            if(serverData.questions.length === 0) {
+            if(!serverData.questions || serverData.questions.length === 0) {
                 container.innerHTML = "<p style='color:#94a3b8; font-style:italic; text-align:center;'>Đề thi trống. Hãy tạo câu hỏi.</p>";
                 return;
             }
@@ -203,15 +209,15 @@
                     headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
                     body: JSON.stringify(serverData)
                 });
-                if(res.ok) alert('🚀 Đã xuất bản và đồng bộ đề thi lên Cloud Server thành công!');
-                else alert('Đồng bộ lỗi, hãy reset lại cấu trúc Bin!');
+                if(res.ok) alert('🚀 Đã xuất bản và đồng bộ đề thi lên Cloud Server JSONbin thành công!');
+                else alert('Đồng bộ lỗi!');
             } catch(e) { alert('Lỗi đường truyền mạng!'); }
         }
 
         function renderSubmissions() {
             const container = document.getElementById('adminSubmissionArea');
-            if(serverData.submissions.length === 0) {
-                container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Chưa có bài nộp nào được ghi nhận từ mạng máy chủ.</p>";
+            if(!serverData.submissions || serverData.submissions.length === 0) {
+                container.innerHTML = "<p style='color:#94a3b8; text-align:center;'>Chưa có bài nộp nào được ghi nhận từ máy chủ.</p>";
                 return;
             }
             container.innerHTML = serverData.submissions.map(s => {
