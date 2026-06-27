@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Quản Trị</title>
+    <title>Admin - Quản Trị Đề Thi</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,23 +12,13 @@
         <h2>QUẢN TRỊ VIÊN</h2>
         <p>Xin chào: <b id="adminName">...</b></p>
 
-        <h3>1. Cấu hình Đề thi</h3>
-        <label>Thời gian làm bài (phút):</label>
-        <input type="text" id="examDuration" placeholder="Ví dụ: 15">
-        <label>Trạng thái đề thi:</label>
-        <select id="examStatus">
-            <option value="mở">Mở cho học sinh làm bài</option>
-            <option value="đóng">Đóng / Khóa đề</option>
-        </select>
-        <button class="btn-success" onclick="updateExamConfig()">Cập nhật cấu hình đề</button>
-
-        <h3>2. Tạo Câu Hỏi Mới</h3>
+        <h3>1. Thêm Câu Hỏi Vào Đề Thi</h3>
         <label>Loại câu hỏi:</label>
         <select id="quizType" onchange="toggleAnswersForm()">
             <option value="tuluan">Tự Luận</option>
             <option value="tracnghiem">Trắc Nghiệm (4 đáp án)</option>
         </select>
-        <textarea id="quizContent" placeholder="Nhập nội dung câu hỏi..."></textarea>
+        <textarea id="quizContent" placeholder="Nhập nội dung câu hỏi hoặc đề bài tại đây..."></textarea>
         
         <div id="tracNghiemForm" style="display: none;">
             <input type="text" id="ansA" placeholder="Đáp án A">
@@ -43,119 +33,118 @@
                 <option value="D">D</option>
             </select>
         </div>
-        <button onclick="saveQuestion()">Lưu Câu Hỏi Lên Server</button>
+        <button class="btn-success" onclick="saveQuestion()">Thêm Vào Danh Sách Câu Hỏi</button>
 
-        <h3>3. Ngân Hàng Câu Hỏi Hiện Tại</h3>
-        <div id="listQuestions">Đang tải câu hỏi...</div>
+        <h3>2. Danh Sách Đề Thi Hiện Tại (Chờ Đồng Bộ)</h3>
+        <div id="listQuestions">Đang tải cấu trúc câu hỏi cục bộ...</div>
+        <button style="background-color: #e67e22;" onclick="syncToBeeceptor()">ĐỒNG BỘ TOÀN BỘ ĐỀ LÊN BEECEPTOR</button>
 
-        <h3>4. Bài Làm Của Học Sinh Nộp Về</h3>
-        <div id="adminSubmissionArea">Đang tải bài nộp...</div>
+        <h3>3. Bài Làm Của Học Sinh Nộp Về</h3>
+        <div id="adminSubmissionArea">Đang tải danh sách bài nộp từ mạng...</div>
     </div>
 
     <script>
-        const API_URL = "https://6a3e27c20443193a1a0b847a.mockapi.io/api/v1"; 
+        // THAY LINK BEECEPTOR CỦA BẠN VÀO ĐÂY
+        const API_URL = "https://k12-cua-lam.free.beeceptor.com"; 
 
         if (localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
         document.getElementById('adminName').innerText = localStorage.getItem('fullname');
+
+        // Lấy danh sách câu hỏi tạm thời từ LocalStorage để quản lý trước khi đồng bộ
+        let localQuestions = JSON.parse(localStorage.getItem('db_questions')) || [];
 
         function toggleAnswersForm() {
             const type = document.getElementById('quizType').value;
             document.getElementById('tracNghiemForm').style.display = type === 'tracnghiem' ? 'block' : 'none';
         }
 
-        async function loadExamConfig() {
-            try {
-                let res = await fetch(`${API_URL}/questions`);
-                let list = await res.json();
-                let config = list.find(item => item.type === 'config');
-                if (config) {
-                    document.getElementById('examDuration').value = config.duration;
-                    document.getElementById('examStatus').value = config.status;
-                    localStorage.setItem('config_id', config.id);
-                } else {
-                    let resNew = await fetch(`${API_URL}/questions`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({type: "config", duration: "15", status: "mở", content: "Cấu hình hệ thống"})
-                    });
-                    let newConf = await resNew.json();
-                    localStorage.setItem('config_id', newConf.id);
-                    document.getElementById('examDuration').value = "15";
-                    document.getElementById('examStatus').value = "mở";
-                }
-            } catch(e) { console.log(e); }
-        }
-
-        async function updateExamConfig() {
-            const duration = document.getElementById('examDuration').value;
-            const status = document.getElementById('examStatus').value;
-            const configId = localStorage.getItem('config_id');
-            
-            await fetch(`${API_URL}/questions/${configId}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({duration, status})
-            });
-            alert('Đã cập nhật cấu hình đề lên mạng!');
-        }
-
-        async function saveQuestion() {
+        function saveQuestion() {
             const type = document.getElementById('quizType').value;
             const content = document.getElementById('quizContent').value;
-            if(!content) return alert('Vui lòng nhập đề bài!');
+            if(!content) return alert('Vui lòng điền đề bài!');
 
-            let data = { type, content };
+            let newId = Date.now().toString();
+            let data = { id: newId, type, content };
+            
             if(type === 'tracnghiem') {
                 data.answers = [
-                    document.getElementById('ansA').value,
-                    document.getElementById('ansB').value,
-                    document.getElementById('ansC').value,
-                    document.getElementById('ansD').value
+                    document.getElementById('ansA').value || "Đáp án A",
+                    document.getElementById('ansB').value || "Đáp án B",
+                    document.getElementById('ansC').value || "Đáp án C",
+                    document.getElementById('ansD').value || "Đáp án D"
                 ];
                 data.correct = document.getElementById('correctAnswer').value;
             }
 
-            await fetch(`${API_URL}/questions`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            alert('Đã thêm câu hỏi lên mạng thành công!');
-            location.reload();
+            localQuestions.push(data);
+            localStorage.setItem('db_questions', JSON.stringify(localQuestions));
+            alert('Đã thêm câu hỏi vào danh sách tạm thời!');
+            renderLocalQuestions();
+            
+            // Reset form
+            document.getElementById('quizContent').value = "";
         }
 
-        async function loadData() {
-            await loadExamConfig();
-            
-            let resQ = await fetch(`${API_URL}/questions`);
-            let allItems = await resQ.json();
-            let questions = allItems.filter(item => item.type !== 'config');
-
-            document.getElementById('listQuestions').innerHTML = questions.map((q, i) => `
+        function renderLocalQuestions() {
+            if(localQuestions.length === 0) {
+                document.getElementById('listQuestions').innerHTML = "<p>Chưa có câu hỏi nào được tạo.</p>";
+                return;
+            }
+            document.getElementById('listQuestions').innerHTML = localQuestions.map((q, i) => `
                 <div class="list-box">
                     <b>Câu ${i+1} [${q.type === 'tuluan' ? 'Tự luận' : 'Trắc nghiệm'}]:</b> ${q.content}
-                    ${q.type === 'tracnghiem' ? `<br><small>Đáp án đúng: ${q.correct}</small>` : ''}
+                    <button style="background:red; padding:2px 5px; float:right; font-size:11px;" onclick="deleteQuestion(${i})">Xóa</button>
+                    ${q.type === 'tracnghiem' ? `<br><small>A: ${q.answers[0]} | B: ${q.answers[1]} | C: ${q.answers[2]} | D: ${q.answers[3]} <br> <b>Đúng: ${q.correct}</b></small>` : ''}
+                    <div style="clear:both;"></div>
                 </div>
             `).join('');
+        }
 
-            let resS = await fetch(`${API_URL}/submissions`);
-            let submissions = await resS.json();
-            document.getElementById('adminSubmissionArea').innerHTML = submissions.map(s => `
-                <div class="list-box" style="border-left:5px solid #34a853;">
-                    <b>Thí sinh: ${s.studentName}</b> <br>
-                    <small>Thời gian nộp: ${s.submitAt}</small>
-                    <p><b>Nội dung bài làm:</b></p>
-                    ${s.answers.map((ans, idx) => `
-                        <div style="margin-left: 15px; margin-bottom: 5px;">
-                            + Câu ${idx+1}: Trả lời: <b style="color:#1a73e8">${ans.answer}</b>
-                        </div>
-                    `).join('')}
-                </div>
-            `).join('');
+        function deleteQuestion(index) {
+            localQuestions.splice(index, 1);
+            localStorage.setItem('db_questions', JSON.stringify(localQuestions));
+            renderLocalQuestions();
+        }
+
+        async function syncToBeeceptor() {
+            try {
+                // Đẩy nguyên mảng câu hỏi lên đường dẫn /questions của Beeceptor
+                let res = await fetch(`${API_URL}/questions`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(localQuestions)
+                });
+                alert('Đã đồng bộ toàn bộ đề thi lên hệ thống mạng Beeceptor thành công!');
+            } catch(e) {
+                alert('Lỗi kết nối mạng hoặc sai link Beeceptor!');
+            }
+        }
+
+        async function loadSubmissions() {
+            try {
+                let res = await fetch(`${API_URL}/submissions`);
+                let submissions = await res.json();
+                if(!Array.isArray(submissions)) submissions = [submissions];
+                document.getElementById('adminSubmissionArea').innerHTML = submissions.map(s => `
+                    <div class="list-box" style="border-left:5px solid #34a853;">
+                        <b>Thí sinh: ${s.studentName || 'Ẩn danh'}</b> <br>
+                        <small>Thời gian nộp: ${s.submitAt}</small>
+                        <p><b>Bài làm:</b></p>
+                        ${s.answers ? s.answers.map((ans, idx) => `
+                            <div style="margin-left: 15px; margin-bottom: 5px;">
+                                + Câu ${idx+1}: Chọn/Viết: <b style="color:#1a73e8">${ans.answer}</b>
+                            </div>
+                        `).join('') : 'Không có dữ liệu'}
+                    </div>
+                `).join('');
+            } catch(e) {
+                document.getElementById('adminSubmissionArea').innerText = "Chưa có học sinh nào nộp bài (hoặc chưa kích hoạt nhận POST /submissions).";
+            }
         }
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-        loadData();
+        renderLocalQuestions();
+        loadSubmissions();
     </script>
 </body>
 </html>
