@@ -60,7 +60,7 @@
         <div id="listQuestions">Đang tải cấu trúc câu hỏi cục bộ...</div>
         <button class="btn-sync" onclick="syncToJSONbin()">⚡ ĐỒNG BỘ ĐỀ LÊN MẠNG (JSONBIN)</button>
 
-        <h3>3. Bài Làm Của Học Sinh Nộp Về</h3>
+        <h3>3. Bài Làm Của Học Sinh Nộp Về <button style="padding:5px 10px; font-size:12px; background:var(--secondary);" onclick="fetchCurrentData()">🔄 TẢI LẠI BÀI NỘP</button></h3>
         <div id="adminSubmissionArea">Đang tải danh sách bài nộp từ hệ thống mạng...</div>
     </div>
 
@@ -71,24 +71,29 @@
         if (localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
         document.getElementById('adminName').innerText = localStorage.getItem('fullname');
 
-        let localQuestions = [];
+        let serverData = { questions: [], submissions: [] };
 
-        // Hàm tự động kéo đề xịn trên JSONbin về để hiển thị khi Admin F5 trang
-        async function fetchCurrentExam() {
+        async function fetchCurrentData() {
             try {
                 let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                     headers: { 'X-Master-Key': MASTER_KEY }
                 });
                 let dataJson = await res.json();
-                // Nếu trên mạng có dữ liệu xịn, lấy luôn dữ liệu đó làm mặc định
-                if(dataJson.record && Array.isArray(dataJson.record)) {
-                    localQuestions = dataJson.record;
-                    localStorage.setItem('db_questions', JSON.stringify(localQuestions));
+                
+                if (dataJson.record && typeof dataJson.record === 'object' && !Array.isArray(dataJson.record)) {
+                    serverData = {
+                        questions: dataJson.record.questions || [],
+                        submissions: dataJson.record.submissions || []
+                    };
+                } else if (Array.isArray(dataJson.record)) {
+                    serverData = { questions: dataJson.record, submissions: [] };
                 }
             } catch(e) {
-                localQuestions = JSON.parse(localStorage.getItem('db_questions')) || [];
+                console.log("Lỗi tải dữ liệu mạng, dùng dữ liệu local tạm thời");
+                serverData.questions = JSON.parse(localStorage.getItem('db_questions')) || [];
             }
             renderLocalQuestions();
+            renderSubmissions();
         }
 
         function toggleAnswersForm() {
@@ -112,19 +117,19 @@
                 data.correct = document.getElementById('correctAnswer').value;
             }
 
-            localQuestions.push(data);
-            localStorage.setItem('db_questions', JSON.stringify(localQuestions));
+            serverData.questions.push(data);
+            localStorage.setItem('db_questions', JSON.stringify(serverData.questions));
             alert('Đã thêm vào danh sách tạm!');
             renderLocalQuestions();
             document.getElementById('quizContent').value = "";
         }
 
         function renderLocalQuestions() {
-            if(localQuestions.length === 0) {
+            if(!serverData.questions || serverData.questions.length === 0) {
                 document.getElementById('listQuestions').innerHTML = "<p style='color:#7f8c8d; font-style:italic;'>Chưa có câu hỏi nào. Hãy tạo câu hỏi ở mục 1.</p>";
                 return;
             }
-            document.getElementById('listQuestions').innerHTML = localQuestions.map((q, i) => `
+            document.getElementById('listQuestions').innerHTML = serverData.questions.map((q, i) => `
                 <div class="list-box">
                     <button class="btn-delete" onclick="deleteQuestion(${i})">Xóa</button>
                     <b>Câu ${i+1} [${q.type === 'tuluan' ? 'Tự luận' : 'Trắc nghiệm'}]:</b> ${q.content}
@@ -135,8 +140,8 @@
         }
 
         function deleteQuestion(index) {
-            localQuestions.splice(index, 1);
-            localStorage.setItem('db_questions', JSON.stringify(localQuestions));
+            serverData.questions.splice(index, 1);
+            localStorage.setItem('db_questions', JSON.stringify(serverData.questions));
             renderLocalQuestions();
         }
 
@@ -148,23 +153,21 @@
                         'Content-Type': 'application/json',
                         'X-Master-Key': MASTER_KEY
                     },
-                    body: JSON.stringify(localQuestions)
+                    body: JSON.stringify(serverData)
                 });
                 if(res.ok) alert('Đã đồng bộ đề thi lên JSONbin thành công! Học sinh có thể làm bài ngay.');
                 else alert('Đồng bộ thất bại, kiểm tra lại tài khoản JSONbin!');
             } catch(e) { alert('Lỗi kết nối mạng!'); }
         }
 
-        // Đọc danh sách bài nộp của học sinh từ bộ nhớ tạm để hiển thị thời gian thực
-        function loadSubmissions() {
-            let submissions = JSON.parse(localStorage.getItem('global_submissions')) || [];
-            if(submissions.length === 0) {
-                document.getElementById('adminSubmissionArea').innerHTML = "<p style='color:#7f8c8d;'>Chưa có học sinh nào nộp bài.</p>";
+        function renderSubmissions() {
+            if(!serverData.submissions || serverData.submissions.length === 0) {
+                document.getElementById('adminSubmissionArea').innerHTML = "<p style='color:#7f8c8d;'>Chưa có học sinh nào nộp bài qua mạng.</p>";
                 return;
             }
-            document.getElementById('adminSubmissionArea').innerHTML = submissions.map(s => `
+            document.getElementById('adminSubmissionArea').innerHTML = serverData.submissions.map(s => `
                 <div class="list-box sub-item">
-                    <b>Thí sinh: <span style="color:var(--primary)">${s.studentName || 'Ẩn danh'}</span></b> <br>
+                    <b>Thí sinh: <span style="color:var(--primary)">${s.studentName}</span></b> <br>
                     <small>Thời gian nộp bài: ${s.submitAt}</small>
                     <p style="margin: 5px 0; font-weight:bold;">Nội dung trả lời:</p>
                     ${s.answers ? s.answers.map((ans, idx) => `
@@ -177,8 +180,7 @@
         }
 
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
-        fetchCurrentExam();
-        loadSubmissions();
+        fetchCurrentData();
     </script>
 </body>
 </html>
